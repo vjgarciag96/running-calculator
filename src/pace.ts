@@ -21,6 +21,38 @@ export interface Calculation {
   splits: readonly Split[];
 }
 
+export const DISTANCES = {
+  '5k': { label: '5K', meters: 5000 },
+  '10k': { label: '10K', meters: 10000 },
+  half: { label: 'Half', meters: 21097 },
+  marathon: { label: 'Marathon', meters: 42195 },
+} as const;
+export type PresetId = keyof typeof DISTANCES;
+
+/** Derives the missing side of the goal plus even 1 km splits with a final partial split. */
+export function calculate(meters: number, goal: Goal): Result<Calculation, InputError> {
+  if (!isPositiveFinite(meters)) return { ok: false, error: 'bad-distance' };
+  const given = goal.kind === 'time' ? goal.seconds : goal.secondsPerKm;
+  if (!isPositiveFinite(given)) return { ok: false, error: 'bad-goal' };
+
+  const km = meters / 1000;
+  const secondsPerKm = goal.kind === 'pace' ? goal.secondsPerKm : goal.seconds / km;
+  const finishSeconds = goal.kind === 'time' ? goal.seconds : goal.secondsPerKm * km;
+
+  const splits: Split[] = [];
+  for (let done = 0; done < meters; ) {
+    const length = Math.min(1000, meters - done);
+    done += length;
+    splits.push({
+      meters: length,
+      seconds: (length / 1000) * secondsPerKm,
+      cumulativeMeters: done,
+      cumulativeSeconds: (done / 1000) * secondsPerKm,
+    });
+  }
+  return { ok: true, value: { meters, secondsPerKm, finishSeconds, splits } };
+}
+
 /** 'm:ss' or 'h:mm:ss' → seconds (> 0). Trims whitespace. */
 export function parseDuration(text: string): Result<number, ParseError> {
   const trimmed = text.trim();
