@@ -36,6 +36,16 @@ export function parseDuration(text: string): Result<number, ParseError> {
   return { ok: true, value: seconds };
 }
 
+/** Decimal km ('21.1', also '21,1') → whole metres (> 0). */
+export function parseKm(text: string): Result<number, ParseError> {
+  const trimmed = text.trim();
+  if (trimmed === '') return { ok: false, error: 'empty' };
+  if (!/^-?(\d+([.,]\d*)?|[.,]\d+)$/.test(trimmed)) return { ok: false, error: 'malformed' };
+  const meters = Math.round(Number(trimmed.replace(',', '.')) * 1000);
+  if (!isPositiveFinite(meters)) return { ok: false, error: 'out-of-range' };
+  return { ok: true, value: meters };
+}
+
 /** Rounds to the nearest second first. < 1 h → 'm:ss', otherwise 'h:mm:ss'. */
 export function formatDuration(seconds: number): string {
   const total = Math.round(seconds);
