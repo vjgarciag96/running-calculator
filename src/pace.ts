@@ -22,10 +22,10 @@ export interface Calculation {
 }
 
 export const DISTANCES = {
-  '5k': { label: '5K', meters: 5000 },
-  '10k': { label: '10K', meters: 10000 },
-  half: { label: 'Half', meters: 21097 },
-  marathon: { label: 'Marathon', meters: 42195 },
+  '5k': { meters: 5000 },
+  '10k': { meters: 10000 },
+  half: { meters: 21097 },
+  marathon: { meters: 42195 },
 } as const;
 export type PresetId = keyof typeof DISTANCES;
 
