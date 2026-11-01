@@ -38,8 +38,9 @@ export type PresetId = keyof typeof DISTANCES;
 
 /** Pace from a finish time, or finish time from a pace, plus even 1 km splits with a final partial split. */
 export function calculate(meters: Meters, goal: Goal): Calculation {
-  const secondsPerKm =
-    goal.kind === 'pace' ? goal.secondsPerKm : ((goal.seconds / meters) * 1000) as Seconds;
+  const secondsPerKm = goal.kind === 'pace'
+    ? goal.secondsPerKm
+    : ((goal.seconds / meters) * 1000) as Seconds;
   const secondsFor = (m: number) => ((m / 1000) * secondsPerKm) as Seconds;
   const finishSeconds = goal.kind === 'time' ? goal.seconds : secondsFor(meters);
 
