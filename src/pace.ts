@@ -43,24 +43,30 @@ export type PresetId = keyof typeof DISTANCES;
  * partial split.
  */
 export function calculate(meters: Meters, goal: Goal): Calculation {
-  const secondsPerKm = goal.kind === 'pace'
-    ? goal.secondsPerKm
-    : ((goal.seconds / meters) * 1000) as SecondsPerKm;
-  const secondsFor = (m: number) => ((m / 1000) * secondsPerKm) as Seconds;
-  const finishSeconds = goal.kind === 'time' ? goal.seconds : secondsFor(meters);
+  const secondsPerKm = goal.kind === 'pace' ? goal.secondsPerKm : paceFor(goal.seconds, meters);
+  const finishSeconds = goal.kind === 'time' ? goal.seconds : timeFor(secondsPerKm, meters);
 
   const splits: Split[] = [];
   for (let done = 0; done < meters;) {
-    const length = Math.min(1000, meters - done);
+    const length = Math.min(1000, meters - done) as Meters;
     done += length;
+    const cumulativeMeters = done as Meters;
     splits.push({
-      meters: length as Meters,
-      seconds: secondsFor(length),
-      cumulativeMeters: done as Meters,
-      cumulativeSeconds: secondsFor(done),
+      meters: length,
+      seconds: timeFor(secondsPerKm, length),
+      cumulativeMeters,
+      cumulativeSeconds: timeFor(secondsPerKm, cumulativeMeters),
     });
   }
   return { meters, secondsPerKm, finishSeconds, splits };
+}
+
+function paceFor(seconds: Seconds, meters: Meters): SecondsPerKm {
+  return ((seconds / meters) * 1000) as SecondsPerKm;
+}
+
+function timeFor(secondsPerKm: SecondsPerKm, meters: Meters): Seconds {
+  return ((meters / 1000) * secondsPerKm) as Seconds;
 }
 
 /** 'm:ss' or 'h:mm:ss' → seconds (> 0). Trims whitespace. */
