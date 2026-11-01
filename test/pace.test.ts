@@ -1,12 +1,12 @@
-import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { test } from 'node:test';
 import {
-  parseDuration,
-  parsePace,
-  parseKm,
-  formatDuration,
   calculate,
   DISTANCES,
+  formatDuration,
+  parseDuration,
+  parseKm,
+  parsePace,
   type Seconds,
   type SecondsPerKm,
 } from '../src/pace.ts';
@@ -76,7 +76,10 @@ test('half marathon at 4:30/km finishes in 1:34:56 with a 97 m last split', () =
 });
 
 test('time to pace round trip gives back the same pace', () => {
-  const byPace = calculate(DISTANCES.half.meters, { kind: 'pace', secondsPerKm: 270 as SecondsPerKm });
+  const byPace = calculate(DISTANCES.half.meters, {
+    kind: 'pace',
+    secondsPerKm: 270 as SecondsPerKm,
+  });
   const finish = parseDuration(formatDuration(byPace.finishSeconds));
   assert.ok(finish.ok);
   const byTime = calculate(DISTANCES.half.meters, { kind: 'time', seconds: finish.value });
