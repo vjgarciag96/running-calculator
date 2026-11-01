@@ -31,6 +31,7 @@ test('parseDuration needs two digits after each colon', () => {
 
 test('parsePace reads a pace with the same rules as a duration', () => {
   assert.deepEqual(parsePace('4:30'), { ok: true, value: 270 });
+  assert.deepEqual(parsePace('12:30'), { ok: true, value: 750 });
   assert.deepEqual(parsePace('5:75'), { ok: false, error: 'out-of-range' });
   assert.deepEqual(parsePace(''), { ok: false, error: 'empty' });
 });
