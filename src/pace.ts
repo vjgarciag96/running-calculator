@@ -9,10 +9,12 @@ declare const brand: unique symbol;
 export type Meters = number & { readonly [brand]: 'Meters' };
 /** Finite seconds, > 0. */
 export type Seconds = number & { readonly [brand]: 'Seconds' };
+/** Finite seconds per km, > 0. A pace, so it can't stand in for a finish time. */
+export type SecondsPerKm = number & { readonly [brand]: 'SecondsPerKm' };
 
 export type Goal =
   | { kind: 'time'; seconds: Seconds }
-  | { kind: 'pace'; secondsPerKm: Seconds };
+  | { kind: 'pace'; secondsPerKm: SecondsPerKm };
 
 export interface Split {
   meters: Meters;
@@ -23,7 +25,7 @@ export interface Split {
 
 export interface Calculation {
   meters: Meters;
-  secondsPerKm: Seconds;
+  secondsPerKm: SecondsPerKm;
   finishSeconds: Seconds;
   splits: readonly Split[];
 }
@@ -40,7 +42,7 @@ export type PresetId = keyof typeof DISTANCES;
 export function calculate(meters: Meters, goal: Goal): Calculation {
   const secondsPerKm = goal.kind === 'pace'
     ? goal.secondsPerKm
-    : ((goal.seconds / meters) * 1000) as Seconds;
+    : ((goal.seconds / meters) * 1000) as SecondsPerKm;
   const secondsFor = (m: number) => ((m / 1000) * secondsPerKm) as Seconds;
   const finishSeconds = goal.kind === 'time' ? goal.seconds : secondsFor(meters);
 
@@ -60,6 +62,15 @@ export function calculate(meters: Meters, goal: Goal): Calculation {
 
 /** 'm:ss' or 'h:mm:ss' → seconds (> 0). Trims whitespace. */
 export function parseDuration(text: string): Result<Seconds, ParseError> {
+  return parseClock(text) as Result<Seconds, ParseError>;
+}
+
+/** A pace typed as 'm:ss' (per km), with the same rules as parseDuration. */
+export function parsePace(text: string): Result<SecondsPerKm, ParseError> {
+  return parseClock(text) as Result<SecondsPerKm, ParseError>;
+}
+
+function parseClock(text: string): Result<number, ParseError> {
   const trimmed = text.trim();
   if (trimmed === '') return { ok: false, error: 'empty' };
   const parts = trimmed.split(':');
@@ -70,7 +81,7 @@ export function parseDuration(text: string): Result<Seconds, ParseError> {
   if (rest.some((n) => n >= 60)) return { ok: false, error: 'out-of-range' };
   const seconds = rest.reduce((total, n) => total * 60 + n, first);
   if (!isPositiveFinite(seconds)) return { ok: false, error: 'out-of-range' };
-  return { ok: true, value: seconds as Seconds };
+  return { ok: true, value: seconds };
 }
 
 /** Decimal km ('21.1', also '21,1') → whole metres (> 0). */
