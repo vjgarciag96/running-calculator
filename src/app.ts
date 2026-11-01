@@ -1,6 +1,6 @@
-import { formatDuration } from './format.ts';
+import { formatDuration, formatKm } from './format.ts';
 import { DEFAULT_INPUTS, type Inputs, toGoal } from './inputs.ts';
-import { calculate, DISTANCES, type Goal, type PresetId } from './pace.ts';
+import { calculate, DISTANCES, type Goal, type PresetId, type Split } from './pace.ts';
 import { type Locale, STRINGS } from './strings.ts';
 
 // The build writes one page per language, with its text already in place.
@@ -16,6 +16,7 @@ const hint = document.getElementById('hint')!;
 const message = document.getElementById('message')!;
 const pace = document.getElementById('pace') as HTMLOutputElement;
 const finish = document.getElementById('finish') as HTMLOutputElement;
+const splits = document.querySelector('tbody')!;
 
 let inputs = DEFAULT_INPUTS;
 fill(inputs);
@@ -53,10 +54,26 @@ function render(inputs: Inputs): void {
   if (!goal.ok) {
     message.textContent = goal.error === 'empty' ? '' : t[goal.error];
     pace.value = finish.value = '–';
+    splits.replaceChildren();
     return;
   }
   message.textContent = '';
   const c = calculate(DISTANCES[inputs.preset].meters, goal.value);
   pace.value = `${formatDuration(c.secondsPerKm)} ${t.perKm}`;
   finish.value = formatDuration(c.finishSeconds);
+  splits.replaceChildren(...c.splits.map(row));
+}
+
+function row(split: Split): HTMLTableRowElement {
+  const tr = document.createElement('tr');
+  for (
+    const text of [
+      formatKm(split.cumulativeMeters, locale),
+      formatDuration(split.seconds),
+      formatDuration(split.cumulativeSeconds),
+    ]
+  ) {
+    tr.insertCell().textContent = text;
+  }
+  return tr;
 }
