@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { formatDuration, parseDuration, parseKm, parsePace } from '../src/format.ts';
+import { formatDuration, parseDuration, parsePace } from '../src/format.ts';
 
 test('parseDuration reads m:ss and h:mm:ss', () => {
   assert.deepEqual(parseDuration('50:00'), { ok: true, value: 3000 });
@@ -29,20 +29,4 @@ test('formatDuration rounds to the second', () => {
   assert.equal(formatDuration(3000), '50:00');
   assert.equal(formatDuration(5696.19), '1:34:56');
   assert.equal(formatDuration(26.19), '0:26');
-});
-
-test('parseKm converts decimal km to metres, to the millimetre', () => {
-  assert.deepEqual(parseKm('10'), { ok: true, value: 10000 });
-  assert.deepEqual(parseKm('21.0975'), { ok: true, value: 21097.5 });
-  assert.deepEqual(parseKm('21,1'), { ok: true, value: 21100 });
-  assert.deepEqual(parseKm('10.0041'), { ok: true, value: 10004.1 });
-  assert.deepEqual(parseKm(' 5 '), { ok: true, value: 5000 });
-});
-
-test('parseKm rejects bad input with a typed error', () => {
-  assert.deepEqual(parseKm('0'), { ok: false, error: 'out-of-range' });
-  assert.deepEqual(parseKm('-5'), { ok: false, error: 'out-of-range' });
-  assert.deepEqual(parseKm('abc'), { ok: false, error: 'malformed' });
-  assert.deepEqual(parseKm('1e3'), { ok: false, error: 'malformed' });
-  assert.deepEqual(parseKm(''), { ok: false, error: 'empty' });
 });

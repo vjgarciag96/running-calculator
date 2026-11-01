@@ -1,4 +1,4 @@
-import type { Meters, Seconds, SecondsPerKm } from './pace.ts';
+import type { Seconds, SecondsPerKm } from './pace.ts';
 
 export type Result<T, E> = { ok: true; value: T } | { ok: false; error: E };
 
@@ -32,23 +32,6 @@ function parseClock(text: string): Result<number, ParseError> {
     return { ok: false, error: 'out-of-range' };
   }
   return { ok: true, value: seconds };
-}
-
-/** Decimal km ('21.1', also '21,1') → metres (> 0), to the millimetre. */
-export function parseKm(text: string): Result<Meters, ParseError> {
-  const trimmed = text.trim();
-  if (trimmed === '') {
-    return { ok: false, error: 'empty' };
-  }
-  if (!/^-?(\d+([.,]\d*)?|[.,]\d+)$/.test(trimmed)) {
-    return { ok: false, error: 'malformed' };
-  }
-  // Rounding to the millimetre clears float noise: 10.0041 * 1000 is 10004.099999999999.
-  const meters = Math.round(Number(trimmed.replace(',', '.')) * 1e6) / 1e3;
-  if (!isPositiveFinite(meters)) {
-    return { ok: false, error: 'out-of-range' };
-  }
-  return { ok: true, value: meters as Meters };
 }
 
 /** Rounds to the nearest second first. < 1 h → 'm:ss', otherwise 'h:mm:ss'. */
