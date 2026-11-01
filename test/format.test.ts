@@ -7,6 +7,7 @@ test('parseDuration reads m:ss and h:mm:ss', () => {
   assert.deepEqual(parseDuration('1:34:56'), { ok: true, value: 5696 });
   assert.deepEqual(parseDuration(' 4:30 '), { ok: true, value: 270 });
   assert.deepEqual(parseDuration('90:00'), { ok: true, value: 5400 });
+  assert.deepEqual(parseDuration('100:00'), { ok: true, value: 6000 });
 });
 
 test('parseDuration rejects bad input with a typed error', () => {
@@ -15,9 +16,17 @@ test('parseDuration rejects bad input with a typed error', () => {
   assert.deepEqual(parseDuration('0:00'), { ok: false, error: 'out-of-range' });
   assert.deepEqual(parseDuration('abc'), { ok: false, error: 'malformed' });
   assert.deepEqual(parseDuration('300'), { ok: false, error: 'malformed' });
-  assert.deepEqual(parseDuration('1:2:3:4'), { ok: false, error: 'malformed' });
+  assert.deepEqual(parseDuration('1:02:03:04'), { ok: false, error: 'malformed' });
   assert.deepEqual(parseDuration(''), { ok: false, error: 'empty' });
   assert.deepEqual(parseDuration('   '), { ok: false, error: 'empty' });
+});
+
+test('parseDuration needs two digits after each colon', () => {
+  assert.deepEqual(parseDuration('4:3'), { ok: false, error: 'malformed' });
+  assert.deepEqual(parseDuration('4:300'), { ok: false, error: 'malformed' });
+  assert.deepEqual(parseDuration('1:2:03'), { ok: false, error: 'malformed' });
+  assert.deepEqual(parseDuration('1:02:3'), { ok: false, error: 'malformed' });
+  assert.deepEqual(parseDuration('4:03'), { ok: true, value: 243 });
 });
 
 test('parsePace reads a pace with the same rules as a duration', () => {

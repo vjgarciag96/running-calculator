@@ -19,11 +19,11 @@ function parseClock(text: string): Result<number, ParseError> {
   if (trimmed === '') {
     return { ok: false, error: 'empty' };
   }
-  const parts = trimmed.split(':');
-  if (parts.length < 2 || parts.length > 3 || !parts.every((p) => /^\d+$/.test(p))) {
+  // Two digits after each colon, so a half-typed '4:3' doesn't read as 4:03.
+  if (!/^\d+(:\d{2}){1,2}$/.test(trimmed)) {
     return { ok: false, error: 'malformed' };
   }
-  const [first, ...rest] = parts.map(Number);
+  const [first, ...rest] = trimmed.split(':').map(Number);
   if (rest.some((n) => n >= 60)) {
     return { ok: false, error: 'out-of-range' };
   }
