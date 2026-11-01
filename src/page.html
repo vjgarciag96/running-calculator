@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title data-t="title">Running calculator</title>
+  <meta name="description" content="">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="../icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../styles.css">
+  <script type="module" src="../app.js"></script>
+  <link rel="modulepreload" href="../format.js">
+  <link rel="modulepreload" href="../inputs.js">
+  <link rel="modulepreload" href="../pace.js">
+  <link rel="modulepreload" href="../strings.js">
+</head>
+<body>
+  <main>
+    <h1 data-t="title">Running calculator</h1>
+    <form>
+      <fieldset>
+        <legend data-t="distance">Distance</legend>
+        <div class="chips">
+          <label><input type="radio" name="preset" value="5k"><span data-t="5k">5K</span></label>
+          <label><input type="radio" name="preset" value="10k" checked><span data-t="10k">10K</span></label>
+          <label><input type="radio" name="preset" value="half"><span data-t="half">Half</span></label>
+          <label><input type="radio" name="preset" value="marathon"><span data-t="marathon">Marathon</span></label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend data-t="goal">Goal</legend>
+        <label for="goal" data-t="timeField">Finish time</label>
+        <input id="goal" name="goal" value="5000" maxlength="8" inputmode="numeric" enterkeyhint="done" autocomplete="off" aria-describedby="hint message">
+        <p id="hint" data-t="timeHint">Digits fill from the right: 13456 is 1:34:56.</p>
+        <p id="message"></p>
+      </fieldset>
+    </form>
+    <dl>
+      <div><dt data-t="paceResult">Pace</dt><dd><output id="pace" for="goal">–</output></dd></div>
+      <div><dt data-t="finishResult">Finish</dt><dd><output id="finish" for="goal">–</output></dd></div>
+    </dl>
+  </main>
+</body>
+</html>
