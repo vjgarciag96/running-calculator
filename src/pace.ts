@@ -15,16 +15,16 @@ export type Goal =
   | { kind: 'pace'; secondsPerKm: Seconds };
 
 export interface Split {
-  meters: number;
-  seconds: number;
-  cumulativeMeters: number;
-  cumulativeSeconds: number;
+  meters: Meters;
+  seconds: Seconds;
+  cumulativeMeters: Meters;
+  cumulativeSeconds: Seconds;
 }
 
 export interface Calculation {
-  meters: number;
-  secondsPerKm: number;
-  finishSeconds: number;
+  meters: Meters;
+  secondsPerKm: Seconds;
+  finishSeconds: Seconds;
   splits: readonly Split[];
 }
 
@@ -38,19 +38,20 @@ export type PresetId = keyof typeof DISTANCES;
 
 /** Derives the missing side of the goal plus even 1 km splits with a final partial split. */
 export function calculate(meters: Meters, goal: Goal): Calculation {
-  const km = meters / 1000;
-  const secondsPerKm = goal.kind === 'pace' ? goal.secondsPerKm : goal.seconds / km;
-  const finishSeconds = goal.kind === 'time' ? goal.seconds : goal.secondsPerKm * km;
+  const secondsPerKm =
+    goal.kind === 'pace' ? goal.secondsPerKm : ((goal.seconds / meters) * 1000) as Seconds;
+  const secondsFor = (m: number) => ((m / 1000) * secondsPerKm) as Seconds;
+  const finishSeconds = goal.kind === 'time' ? goal.seconds : secondsFor(meters);
 
   const splits: Split[] = [];
   for (let done = 0; done < meters; ) {
     const length = Math.min(1000, meters - done);
     done += length;
     splits.push({
-      meters: length,
-      seconds: (length / 1000) * secondsPerKm,
-      cumulativeMeters: done,
-      cumulativeSeconds: (done / 1000) * secondsPerKm,
+      meters: length as Meters,
+      seconds: secondsFor(length),
+      cumulativeMeters: done as Meters,
+      cumulativeSeconds: secondsFor(done),
     });
   }
   return { meters, secondsPerKm, finishSeconds, splits };
