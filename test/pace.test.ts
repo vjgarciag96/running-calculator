@@ -1,6 +1,15 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseDuration, parseKm, formatDuration, calculate, DISTANCES, type Seconds } from '../src/pace.ts';
+import {
+  parseDuration,
+  parsePace,
+  parseKm,
+  formatDuration,
+  calculate,
+  DISTANCES,
+  type Seconds,
+  type SecondsPerKm,
+} from '../src/pace.ts';
 
 test('parseDuration reads m:ss and h:mm:ss', () => {
   assert.deepEqual(parseDuration('50:00'), { ok: true, value: 3000 });
@@ -16,6 +25,12 @@ test('parseDuration rejects bad input with a typed error', () => {
   assert.deepEqual(parseDuration('1:2:3:4'), { ok: false, error: 'malformed' });
   assert.deepEqual(parseDuration(''), { ok: false, error: 'empty' });
   assert.deepEqual(parseDuration('   '), { ok: false, error: 'empty' });
+});
+
+test('parsePace reads a pace with the same rules as a duration', () => {
+  assert.deepEqual(parsePace('4:30'), { ok: true, value: 270 });
+  assert.deepEqual(parsePace('5:75'), { ok: false, error: 'out-of-range' });
+  assert.deepEqual(parsePace(''), { ok: false, error: 'empty' });
 });
 
 test('formatDuration rounds to the second', () => {
@@ -50,7 +65,7 @@ test('10 km in 50:00 holds 5:00/km with ten 5:00 splits', () => {
 });
 
 test('half marathon at 4:30/km finishes in 1:34:56 with a 97 m last split', () => {
-  const c = calculate(DISTANCES.half.meters, { kind: 'pace', secondsPerKm: 270 as Seconds });
+  const c = calculate(DISTANCES.half.meters, { kind: 'pace', secondsPerKm: 270 as SecondsPerKm });
   assert.equal(formatDuration(c.finishSeconds), '1:34:56');
   assert.equal(c.splits.length, 22);
   const last = c.splits.at(-1)!;
@@ -61,7 +76,7 @@ test('half marathon at 4:30/km finishes in 1:34:56 with a 97 m last split', () =
 });
 
 test('time to pace round trip gives back the same pace', () => {
-  const byPace = calculate(DISTANCES.half.meters, { kind: 'pace', secondsPerKm: 270 as Seconds });
+  const byPace = calculate(DISTANCES.half.meters, { kind: 'pace', secondsPerKm: 270 as SecondsPerKm });
   const finish = parseDuration(formatDuration(byPace.finishSeconds));
   assert.ok(finish.ok);
   const byTime = calculate(DISTANCES.half.meters, { kind: 'time', seconds: finish.value });
