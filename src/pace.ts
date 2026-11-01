@@ -1,5 +1,6 @@
 // Brands exist only at compile time. Meters come only from DISTANCES, and times and
-// paces only from the parsers in format.ts, so calculate() never sees a bad distance or goal.
+// paces are meant to come only from checked user input, so calculate() never sees a bad
+// distance or goal.
 declare const brand: unique symbol;
 /** Finite metres, > 0. */
 export type Meters = number & { readonly [brand]: 'Meters' };
