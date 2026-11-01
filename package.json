@@ -9,6 +9,7 @@
   "scripts": {
     "build": "tsc",
     "test": "node --test",
+    "size": "for f in site/*; do gzip -9c \"$f\" | wc -c; done | awk '{ s += $1 } END { print s \" B gzipped (budget 10240)\"; exit s > 10240 }'",
     "fmt": "dprint fmt",
     "fmt:check": "dprint check"
   },
