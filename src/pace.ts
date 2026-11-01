@@ -52,7 +52,9 @@ export function calculate(meters: Meters, goal: Goal): Calculation {
       meters: length,
       seconds: timeFor(secondsPerKm, length),
       cumulativeMeters,
-      cumulativeSeconds: timeFor(secondsPerKm, cumulativeMeters),
+      // A fraction of the finish, not pace × distance: at the end done / meters is exactly 1,
+      // so the last cumulative time is exactly the finish time even when float maths drifts.
+      cumulativeSeconds: (finishSeconds * (done / meters)) as Seconds,
     });
   }
   return { meters, secondsPerKm, finishSeconds, splits };
