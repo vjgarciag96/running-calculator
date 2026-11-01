@@ -1,7 +1,7 @@
 // Brands exist only at compile time. The parsers in format.ts are the only way to get
 // one from user input, so calculate() never sees a bad distance or goal.
 declare const brand: unique symbol;
-/** Whole metres, > 0. */
+/** Finite metres, > 0. */
 export type Meters = number & { readonly [brand]: 'Meters' };
 /** Finite seconds, > 0. */
 export type Seconds = number & { readonly [brand]: 'Seconds' };
@@ -29,7 +29,7 @@ export interface Calculation {
 export const DISTANCES = {
   '5k': { meters: 5000 as Meters },
   '10k': { meters: 10000 as Meters },
-  half: { meters: 21097 as Meters },
+  half: { meters: 21097.5 as Meters },
   marathon: { meters: 42195 as Meters },
 } as const;
 export type PresetId = keyof typeof DISTANCES;

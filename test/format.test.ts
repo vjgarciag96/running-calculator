@@ -31,10 +31,11 @@ test('formatDuration rounds to the second', () => {
   assert.equal(formatDuration(26.19), '0:26');
 });
 
-test('parseKm converts decimal km to whole metres', () => {
+test('parseKm converts decimal km to metres, to the millimetre', () => {
   assert.deepEqual(parseKm('10'), { ok: true, value: 10000 });
-  assert.deepEqual(parseKm('21.0975'), { ok: true, value: 21098 });
+  assert.deepEqual(parseKm('21.0975'), { ok: true, value: 21097.5 });
   assert.deepEqual(parseKm('21,1'), { ok: true, value: 21100 });
+  assert.deepEqual(parseKm('10.0041'), { ok: true, value: 10004.1 });
   assert.deepEqual(parseKm(' 5 '), { ok: true, value: 5000 });
 });
 
