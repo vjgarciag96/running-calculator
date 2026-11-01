@@ -1,0 +1,155 @@
+:root {
+  color-scheme: light dark;
+  --bg: light-dark(#fff, #111);
+  --fg: light-dark(#1a1a1a, #eee);
+  --muted: light-dark(#595959, #a3a3a3);
+  --line: light-dark(#ddd, #333);
+  --chip: light-dark(#f0f0f0, #262626);
+  --accent: light-dark(#b91c1c, #f87171);
+  --on-accent: light-dark(#fff, #111);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+}
+
+main {
+  max-width: 32rem;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+h1 {
+  font-size: 1.5rem;
+  margin: 0 0 1rem;
+}
+
+fieldset {
+  border: 0;
+  margin: 0 0 1.25rem;
+  padding: 0;
+  min-width: 0;
+}
+
+legend,
+label[for] {
+  font-weight: 600;
+  padding: 0;
+  margin-bottom: 0.5rem;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+/* The radio covers its label, so the whole chip is the click and focus target. */
+.chips label {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 1.25rem;
+  border-radius: 999px;
+  background: var(--chip);
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.chips input {
+  appearance: none;
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  border-radius: inherit;
+  cursor: pointer;
+}
+
+.chips label:has(:checked) {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+/* High-contrast modes replace the colours above, so use the system's selection colours instead. */
+@media (forced-colors: active) {
+  .chips label:has(:checked) {
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
+  }
+}
+
+input:focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: 2px;
+}
+
+#goal {
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  margin-top: 0.25rem;
+  padding: 0.25rem 0.75rem;
+  border: 2px solid var(--line);
+  border-radius: 0.75rem;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 1.5rem;
+  font-variant-numeric: tabular-nums;
+}
+
+#goal[aria-invalid='true'] {
+  border-color: var(--accent);
+}
+
+#hint,
+#message {
+  margin: 0.25rem 0 0;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+/* Holds a line even when empty, so an error appearing doesn't push the results down. */
+#message {
+  min-height: 1lh;
+  color: var(--accent);
+}
+
+dl {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin: 0 0 1.25rem;
+}
+
+dt {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+dd {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 600;
+}
+
+output {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chips label {
+    transition: none;
+  }
+}
