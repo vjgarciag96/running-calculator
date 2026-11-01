@@ -1,4 +1,4 @@
-// Brands exist only at compile time. The parsers in text.ts are the only way to get
+// Brands exist only at compile time. The parsers in format.ts are the only way to get
 // one from user input, so calculate() never sees a bad distance or goal.
 declare const brand: unique symbol;
 /** Whole metres, > 0. */

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { formatDuration, parseDuration } from '../src/format.ts';
 import { calculate, DISTANCES, type Seconds, type SecondsPerKm } from '../src/pace.ts';
-import { formatDuration, parseDuration } from '../src/text.ts';
 
 test('10 km in 50:00 holds 5:00/km with ten 5:00 splits', () => {
   const c = calculate(DISTANCES['10k'].meters, { kind: 'time', seconds: 3000 as Seconds });

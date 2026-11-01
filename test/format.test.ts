@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { formatDuration, parseDuration, parseKm, parsePace } from '../src/text.ts';
+import { formatDuration, parseDuration, parseKm, parsePace } from '../src/format.ts';
 
 test('parseDuration reads m:ss and h:mm:ss', () => {
   assert.deepEqual(parseDuration('50:00'), { ok: true, value: 3000 });
