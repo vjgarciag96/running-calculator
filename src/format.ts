@@ -1,4 +1,5 @@
-import type { Seconds, SecondsPerKm } from './pace.ts';
+import type { Meters, Seconds, SecondsPerKm } from './pace.ts';
+import type { Locale } from './strings.ts';
 
 export type Result<T, E> = { ok: true; value: T } | { ok: false; error: E };
 
@@ -57,6 +58,12 @@ export function formatDuration(seconds: number): string {
   const m = Math.floor((total % 3600) / 60);
   const s = String(total % 60).padStart(2, '0');
   return h > 0 ? `${h}:${String(m).padStart(2, '0')}:${s}` : `${m}:${s}`;
+}
+
+/** Kilometres for a splits table, exact: 1000 → '1', 21097.5 → '21.0975' ('21,0975' in Spanish). */
+export function formatKm(meters: Meters, locale: Locale): string {
+  // Four decimals is 0.1 m, so every preset distance shows exactly instead of looking rounded off.
+  return new Intl.NumberFormat(locale, { maximumFractionDigits: 4 }).format(meters / 1000);
 }
 
 function isPositiveFinite(n: number): boolean {

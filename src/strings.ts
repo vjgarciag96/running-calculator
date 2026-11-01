@@ -2,7 +2,7 @@
 // misses one. page.html refers to keys with data-t, and the build fills them in per locale.
 const en = {
   title: 'Running calculator',
-  description: 'Pace and finish time for a 5K, 10K, half marathon or marathon.',
+  description: 'Pace, finish time and 1 km splits for a 5K, 10K, half marathon or marathon.',
   distance: 'Distance',
   '5k': '5K',
   '10k': '10K',
@@ -20,13 +20,17 @@ const en = {
   'out-of-range': 'Minutes and seconds go up to 59, and the time must be above 0.',
   paceResult: 'Pace',
   finishResult: 'Finish',
+  splits: 'Splits',
+  km: 'km',
+  split: 'Split',
+  total: 'Total',
 };
 
 export type Messages = Record<keyof typeof en, string>;
 
 const es: Messages = {
   title: 'Calculadora de ritmo',
-  description: 'Ritmo y tiempo final para 5K, 10K, media maratón o maratón.',
+  description: 'Ritmo, tiempo final y parciales de 1 km para 5K, 10K, media maratón o maratón.',
   distance: 'Distancia',
   '5k': '5K',
   '10k': '10K',
@@ -45,6 +49,10 @@ const es: Messages = {
     'Los minutos y los segundos llegan hasta 59, y el tiempo tiene que ser mayor que 0.',
   paceResult: 'Ritmo',
   finishResult: 'Tiempo final',
+  splits: 'Parciales',
+  km: 'km',
+  split: 'Parcial',
+  total: 'Total',
 };
 
 export const STRINGS = { en, es } satisfies Record<string, Messages>;

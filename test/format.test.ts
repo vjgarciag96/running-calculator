@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { formatDuration, parseDuration, parsePace } from '../src/format.ts';
+import { formatDuration, formatKm, parseDuration, parsePace } from '../src/format.ts';
+import type { Meters } from '../src/pace.ts';
 
 test('parseDuration reads m:ss and h:mm:ss', () => {
   assert.deepEqual(parseDuration('50:00'), { ok: true, value: 3000 });
@@ -71,4 +72,17 @@ test('formatDuration rounds to the second', () => {
   assert.equal(formatDuration(3723), '1:02:03');
   assert.equal(formatDuration(3599.6), '1:00:00');
   assert.equal(formatDuration(26.19), '0:26');
+});
+
+test('formatKm gives whole km, or the exact distance for a partial km', () => {
+  assert.equal(formatKm(1000 as Meters, 'en'), '1');
+  assert.equal(formatKm(21000 as Meters, 'en'), '21');
+  assert.equal(formatKm(21097.5 as Meters, 'en'), '21.0975');
+  assert.equal(formatKm(42195 as Meters, 'en'), '42.195');
+});
+
+test('formatKm uses the decimal separator of the locale', () => {
+  assert.equal(formatKm(1000 as Meters, 'es'), '1');
+  assert.equal(formatKm(21097.5 as Meters, 'es'), '21,0975');
+  assert.equal(formatKm(42195 as Meters, 'es'), '42,195');
 });
