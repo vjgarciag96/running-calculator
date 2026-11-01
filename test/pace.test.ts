@@ -24,7 +24,8 @@ test('half marathon at 4:30/km finishes in 1:34:56 with a 97.5 m last split', ()
 });
 
 test('time to pace round trip gives back the same pace', () => {
-  // Not exact in floating point: the marathon at 890 s/km comes back as 890.0000000000001.
+  // Floating point can be off in the last digit (the marathon at 890 s/km comes back as
+  // 890.0000000000001), far below the second the UI shows, so compare with a tolerance.
   for (const { meters } of Object.values(DISTANCES)) {
     for (const pace of [270, 890]) {
       const byPace = calculate(meters, { kind: 'pace', secondsPerKm: pace as SecondsPerKm });
