@@ -5,6 +5,7 @@ import { formatDuration, parseDuration, parsePace } from '../src/format.ts';
 test('parseDuration reads m:ss and h:mm:ss', () => {
   assert.deepEqual(parseDuration('50:00'), { ok: true, value: 3000 });
   assert.deepEqual(parseDuration('1:34:56'), { ok: true, value: 5696 });
+  assert.deepEqual(parseDuration('10:00:00'), { ok: true, value: 36000 });
   assert.deepEqual(parseDuration(' 4:30 '), { ok: true, value: 270 });
   assert.deepEqual(parseDuration('90:00'), { ok: true, value: 5400 });
   assert.deepEqual(parseDuration('100:00'), { ok: true, value: 6000 });
