@@ -13,6 +13,7 @@ test('parseDuration reads m:ss and h:mm:ss', () => {
 
 test('parseDuration rejects bad input with a typed error', () => {
   assert.deepEqual(parseDuration('5:75'), { ok: false, error: 'out-of-range' });
+  assert.deepEqual(parseDuration('4:60'), { ok: false, error: 'out-of-range' });
   assert.deepEqual(parseDuration('1:60:00'), { ok: false, error: 'out-of-range' });
   assert.deepEqual(parseDuration('0:00'), { ok: false, error: 'out-of-range' });
   assert.deepEqual(parseDuration('abc'), { ok: false, error: 'malformed' });

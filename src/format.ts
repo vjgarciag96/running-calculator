@@ -26,15 +26,18 @@ function parseClock(text: string): Result<number, ParseError> {
   if (!/^\d+(:\d{2}){1,2}$/.test(trimmed)) {
     return { ok: false, error: 'malformed' };
   }
-  const [first, ...rest] = trimmed.split(':').map(Number);
-  if (rest.some((n) => n >= 60)) {
+  const parts = trimmed.split(':').map(Number);
+  const hasHours = parts.length === 3;
+  const [hours, minutes, seconds] = hasHours ? parts : [0, ...parts];
+  // Only the first number is unbounded: '90:00' is fine, '1:90:00' is not.
+  if (seconds >= 60 || (hasHours && minutes >= 60)) {
     return { ok: false, error: 'out-of-range' };
   }
-  const seconds = rest.reduce((total, n) => total * 60 + n, first);
-  if (!isPositiveFinite(seconds)) {
+  const total = hours * 3600 + minutes * 60 + seconds;
+  if (!isPositiveFinite(total)) {
     return { ok: false, error: 'out-of-range' };
   }
-  return { ok: true, value: seconds };
+  return { ok: true, value: total };
 }
 
 /** Rounds to the nearest second first. < 1 h → 'm:ss', otherwise 'h:mm:ss'. */
