@@ -1,0 +1,19 @@
+{
+  "name": "running-calculator",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "node --test",
+    "fmt": "dprint fmt",
+    "fmt:check": "dprint check"
+  },
+  "devDependencies": {
+    "dprint": "^0.64.3",
+    "typescript": "^7.0.2"
+  }
+}
