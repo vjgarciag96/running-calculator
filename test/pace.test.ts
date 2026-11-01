@@ -35,7 +35,7 @@ test('time to pace round trip gives back the same pace', () => {
   }
 });
 
-test('every distance splits cleanly and ends exactly at the finish, in both modes', () => {
+test('every split matches the pace and the last one ends exactly at the finish', () => {
   const goals: Goal[] = [
     { kind: 'pace', secondsPerKm: 300 as SecondsPerKm },
     { kind: 'pace', secondsPerKm: 437 as SecondsPerKm },
@@ -51,7 +51,11 @@ test('every distance splits cleanly and ends exactly at the finish, in both mode
       c.splits.forEach((s, i) => {
         const previous = c.splits[i - 1];
         assert.ok(!previous || s.cumulativeMeters > previous.cumulativeMeters, label);
-        assert.ok(!previous || s.cumulativeSeconds > previous.cumulativeSeconds, label);
+        assert.ok(Math.abs(s.seconds - (s.meters / 1000) * c.secondsPerKm) < 1e-9, label);
+        assert.ok(
+          Math.abs(s.cumulativeSeconds - (s.cumulativeMeters / 1000) * c.secondsPerKm) < 1e-9,
+          label,
+        );
       });
       assert.equal(c.splits.at(-1)!.cumulativeMeters, meters, label);
       assert.equal(c.splits.at(-1)!.cumulativeSeconds, c.finishSeconds, label);
