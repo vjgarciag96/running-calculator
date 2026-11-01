@@ -1,0 +1,13 @@
+{
+  "lineWidth": 100,
+  "typescript": {
+    "quoteStyle": "preferSingle",
+    "operatorPosition": "nextLine",
+    "conditionalExpression.linePerExpression": true,
+    "conditionalExpression.preferSingleLine": false,
+    "ifStatement.useBraces": "always",
+    "ifStatement.singleBodyPosition": "nextLine"
+  },
+  "excludes": ["site", "node_modules"],
+  "plugins": ["https://plugins.dprint.dev/typescript-0.95.15.wasm"]
+}

@@ -8,9 +8,12 @@
   },
   "scripts": {
     "build": "tsc",
-    "test": "node --test"
+    "test": "node --test",
+    "fmt": "dprint fmt",
+    "fmt:check": "dprint check"
   },
   "devDependencies": {
+    "dprint": "^0.64.3",
     "typescript": "^7.0.2"
   }
 }
