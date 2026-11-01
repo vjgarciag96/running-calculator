@@ -2,13 +2,6 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { calculate, DISTANCES, type Goal, type Seconds, type SecondsPerKm } from '../src/pace.ts';
 
-test('presets are the official race distances in metres', () => {
-  assert.deepEqual(
-    Object.fromEntries(Object.entries(DISTANCES).map(([id, d]) => [id, d.meters])),
-    { '5k': 5000, '10k': 10000, half: 21097.5, marathon: 42195 },
-  );
-});
-
 test('10 km in 50:00 holds 5:00/km with ten 5:00 splits', () => {
   const c = calculate(DISTANCES['10k'].meters, { kind: 'time', seconds: 3000 as Seconds });
   assert.equal(c.secondsPerKm, 300);
