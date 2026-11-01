@@ -36,7 +36,7 @@ export const DISTANCES = {
 } as const;
 export type PresetId = keyof typeof DISTANCES;
 
-/** Derives the missing side of the goal plus even 1 km splits with a final partial split. */
+/** Pace from a finish time, or finish time from a pace, plus even 1 km splits with a final partial split. */
 export function calculate(meters: Meters, goal: Goal): Calculation {
   const secondsPerKm =
     goal.kind === 'pace' ? goal.secondsPerKm : ((goal.seconds / meters) * 1000) as Seconds;
