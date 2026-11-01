@@ -1,11 +1,18 @@
 export type Result<T, E> = { ok: true; value: T } | { ok: false; error: E };
 
 export type ParseError = 'empty' | 'malformed' | 'out-of-range';
-export type InputError = 'bad-distance' | 'bad-goal';
+
+// Brands exist only at compile time. The parsers are the only way to get one
+// from user input, so calculate() never sees a bad distance or goal.
+declare const brand: unique symbol;
+/** Whole metres, > 0. */
+export type Meters = number & { readonly [brand]: 'Meters' };
+/** Finite seconds, > 0. */
+export type Seconds = number & { readonly [brand]: 'Seconds' };
 
 export type Goal =
-  | { kind: 'time'; seconds: number }
-  | { kind: 'pace'; secondsPerKm: number };
+  | { kind: 'time'; seconds: Seconds }
+  | { kind: 'pace'; secondsPerKm: Seconds };
 
 export interface Split {
   meters: number;
@@ -22,19 +29,15 @@ export interface Calculation {
 }
 
 export const DISTANCES = {
-  '5k': { meters: 5000 },
-  '10k': { meters: 10000 },
-  half: { meters: 21097 },
-  marathon: { meters: 42195 },
+  '5k': { meters: 5000 as Meters },
+  '10k': { meters: 10000 as Meters },
+  half: { meters: 21097 as Meters },
+  marathon: { meters: 42195 as Meters },
 } as const;
 export type PresetId = keyof typeof DISTANCES;
 
 /** Derives the missing side of the goal plus even 1 km splits with a final partial split. */
-export function calculate(meters: number, goal: Goal): Result<Calculation, InputError> {
-  if (!isPositiveFinite(meters)) return { ok: false, error: 'bad-distance' };
-  const given = goal.kind === 'time' ? goal.seconds : goal.secondsPerKm;
-  if (!isPositiveFinite(given)) return { ok: false, error: 'bad-goal' };
-
+export function calculate(meters: Meters, goal: Goal): Calculation {
   const km = meters / 1000;
   const secondsPerKm = goal.kind === 'pace' ? goal.secondsPerKm : goal.seconds / km;
   const finishSeconds = goal.kind === 'time' ? goal.seconds : goal.secondsPerKm * km;
@@ -50,11 +53,11 @@ export function calculate(meters: number, goal: Goal): Result<Calculation, Input
       cumulativeSeconds: (done / 1000) * secondsPerKm,
     });
   }
-  return { ok: true, value: { meters, secondsPerKm, finishSeconds, splits } };
+  return { meters, secondsPerKm, finishSeconds, splits };
 }
 
 /** 'm:ss' or 'h:mm:ss' → seconds (> 0). Trims whitespace. */
-export function parseDuration(text: string): Result<number, ParseError> {
+export function parseDuration(text: string): Result<Seconds, ParseError> {
   const trimmed = text.trim();
   if (trimmed === '') return { ok: false, error: 'empty' };
   const parts = trimmed.split(':');
@@ -65,17 +68,17 @@ export function parseDuration(text: string): Result<number, ParseError> {
   if (rest.some((n) => n >= 60)) return { ok: false, error: 'out-of-range' };
   const seconds = rest.reduce((total, n) => total * 60 + n, first);
   if (!isPositiveFinite(seconds)) return { ok: false, error: 'out-of-range' };
-  return { ok: true, value: seconds };
+  return { ok: true, value: seconds as Seconds };
 }
 
 /** Decimal km ('21.1', also '21,1') → whole metres (> 0). */
-export function parseKm(text: string): Result<number, ParseError> {
+export function parseKm(text: string): Result<Meters, ParseError> {
   const trimmed = text.trim();
   if (trimmed === '') return { ok: false, error: 'empty' };
   if (!/^-?(\d+([.,]\d*)?|[.,]\d+)$/.test(trimmed)) return { ok: false, error: 'malformed' };
   const meters = Math.round(Number(trimmed.replace(',', '.')) * 1000);
   if (!isPositiveFinite(meters)) return { ok: false, error: 'out-of-range' };
-  return { ok: true, value: meters };
+  return { ok: true, value: meters as Meters };
 }
 
 /** Rounds to the nearest second first. < 1 h → 'm:ss', otherwise 'h:mm:ss'. */
