@@ -1,5 +1,5 @@
 import { formatDuration, formatKm } from './format.ts';
-import { DEFAULT_INPUTS, type Inputs, toGoal } from './inputs.ts';
+import { type Inputs, restore, toGoal } from './inputs.ts';
 import { calculate, DISTANCES, type Goal, type PresetId, type Split } from './pace.ts';
 import { type Locale, STRINGS } from './strings.ts';
 
@@ -17,8 +17,9 @@ const message = document.getElementById('message')!;
 const pace = document.getElementById('pace') as HTMLOutputElement;
 const finish = document.getElementById('finish') as HTMLOutputElement;
 const splits = document.querySelector('tbody')!;
+const STORAGE_KEY = 'inputs';
 
-let inputs = DEFAULT_INPUTS;
+let inputs = restore(load());
 fill(inputs);
 render(inputs);
 
@@ -26,10 +27,26 @@ render(inputs);
 // noticing the mode was wrong is still there after switching.
 form.addEventListener('input', () => {
   inputs = readForm();
+  save(inputs);
   render(inputs);
 });
 // Results are live, so Enter has nothing to submit and would only reload the page.
 form.addEventListener('submit', (event) => event.preventDefault());
+
+// Storage can be blocked (privacy settings, full quota). The page then works without saving.
+function load(): string | null {
+  try {
+    return localStorage.getItem(STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function save(inputs: Inputs): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(inputs));
+  } catch {}
+}
 
 function readForm(): Inputs {
   return {
