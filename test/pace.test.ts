@@ -1,6 +1,13 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { calculate, DISTANCES, type Seconds, type SecondsPerKm } from '../src/pace.ts';
+import { calculate, DISTANCES, type Goal, type Seconds, type SecondsPerKm } from '../src/pace.ts';
+
+test('presets are the official race distances in metres', () => {
+  assert.deepEqual(
+    Object.fromEntries(Object.entries(DISTANCES).map(([id, d]) => [id, d.meters])),
+    { '5k': 5000, '10k': 10000, half: 21097.5, marathon: 42195 },
+  );
+});
 
 test('10 km in 50:00 holds 5:00/km with ten 5:00 splits', () => {
   const c = calculate(DISTANCES['10k'].meters, { kind: 'time', seconds: 3000 as Seconds });
@@ -24,13 +31,36 @@ test('half marathon at 4:30/km finishes in 1:34:56 with a 97.5 m last split', ()
 });
 
 test('time to pace round trip gives back the same pace', () => {
-  const byPace = calculate(DISTANCES.half.meters, {
-    kind: 'pace',
-    secondsPerKm: 270 as SecondsPerKm,
-  });
-  const byTime = calculate(DISTANCES.half.meters, {
-    kind: 'time',
-    seconds: byPace.finishSeconds,
-  });
-  assert.equal(byTime.secondsPerKm, 270);
+  // Not exact in floating point: the marathon at 890 s/km comes back as 890.0000000000001.
+  for (const { meters } of Object.values(DISTANCES)) {
+    for (const pace of [270, 890]) {
+      const byPace = calculate(meters, { kind: 'pace', secondsPerKm: pace as SecondsPerKm });
+      const byTime = calculate(meters, { kind: 'time', seconds: byPace.finishSeconds });
+      assert.ok(Math.abs(byTime.secondsPerKm - pace) < 1e-9, `${meters} m at ${pace} s/km`);
+    }
+  }
+});
+
+test('every distance splits cleanly and ends exactly at the finish, in both modes', () => {
+  const goals: Goal[] = [
+    { kind: 'pace', secondsPerKm: 300 as SecondsPerKm },
+    { kind: 'pace', secondsPerKm: 437 as SecondsPerKm },
+    { kind: 'time', seconds: 3001 as Seconds },
+    { kind: 'time', seconds: 20005 as Seconds },
+  ];
+  for (const { meters } of Object.values(DISTANCES)) {
+    for (const goal of goals) {
+      const label = `${meters} m, ${JSON.stringify(goal)}`;
+      const c = calculate(meters, goal);
+      assert.equal(c.splits.length, Math.ceil(meters / 1000), label);
+      assert.equal(c.splits.reduce((sum, s) => sum + s.meters, 0), meters, label);
+      c.splits.forEach((s, i) => {
+        const previous = c.splits[i - 1];
+        assert.ok(!previous || s.cumulativeMeters > previous.cumulativeMeters, label);
+        assert.ok(!previous || s.cumulativeSeconds > previous.cumulativeSeconds, label);
+      });
+      assert.equal(c.splits.at(-1)!.cumulativeMeters, meters, label);
+      assert.equal(c.splits.at(-1)!.cumulativeSeconds, c.finishSeconds, label);
+    }
+  }
 });
