@@ -4,12 +4,15 @@ export type Result<T, E> = { ok: true; value: T } | { ok: false; error: E };
 
 export type ParseError = 'empty' | 'malformed' | 'out-of-range';
 
-/** 'm:ss' or 'h:mm:ss' → seconds (> 0). Trims whitespace. */
+/**
+ * Minutes and seconds ('4:30', '50:00') or hours too ('1:34:56') → seconds (> 0).
+ * Trims whitespace.
+ */
 export function parseDuration(text: string): Result<Seconds, ParseError> {
   return parseClock(text) as Result<Seconds, ParseError>;
 }
 
-/** A pace typed as 'm:ss' (per km), with the same rules as parseDuration. */
+/** A pace per km as minutes and seconds ('4:30', '12:30'), with the same rules as parseDuration. */
 export function parsePace(text: string): Result<SecondsPerKm, ParseError> {
   return parseClock(text) as Result<SecondsPerKm, ParseError>;
 }
