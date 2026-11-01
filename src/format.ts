@@ -34,7 +34,7 @@ function parseClock(text: string): Result<number, ParseError> {
   return { ok: true, value: seconds };
 }
 
-/** Decimal km ('21.1', also '21,1') → whole metres (> 0). */
+/** Decimal km ('21.1', also '21,1') → metres (> 0), to the millimetre. */
 export function parseKm(text: string): Result<Meters, ParseError> {
   const trimmed = text.trim();
   if (trimmed === '') {
@@ -43,7 +43,8 @@ export function parseKm(text: string): Result<Meters, ParseError> {
   if (!/^-?(\d+([.,]\d*)?|[.,]\d+)$/.test(trimmed)) {
     return { ok: false, error: 'malformed' };
   }
-  const meters = Math.round(Number(trimmed.replace(',', '.')) * 1000);
+  // Rounding to the millimetre clears float noise: 10.0041 * 1000 is 10004.099999999999.
+  const meters = Math.round(Number(trimmed.replace(',', '.')) * 1e6) / 1e3;
   if (!isPositiveFinite(meters)) {
     return { ok: false, error: 'out-of-range' };
   }

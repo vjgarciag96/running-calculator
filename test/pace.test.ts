@@ -12,14 +12,14 @@ test('10 km in 50:00 holds 5:00/km with ten 5:00 splits', () => {
   assert.equal(formatDuration(c.splits.at(-1)!.cumulativeSeconds), '50:00');
 });
 
-test('half marathon at 4:30/km finishes in 1:34:56 with a 97 m last split', () => {
+test('half marathon at 4:30/km finishes in 1:34:56 with a 97.5 m last split', () => {
   const c = calculate(DISTANCES.half.meters, { kind: 'pace', secondsPerKm: 270 as SecondsPerKm });
   assert.equal(formatDuration(c.finishSeconds), '1:34:56');
   assert.equal(c.splits.length, 22);
   const last = c.splits.at(-1)!;
-  assert.equal(last.meters, 97);
+  assert.equal(last.meters, 97.5);
   assert.equal(formatDuration(last.seconds), '0:26');
-  assert.equal(last.cumulativeMeters, 21097);
+  assert.equal(last.cumulativeMeters, 21097.5);
   assert.equal(formatDuration(last.cumulativeSeconds), '1:34:56');
 });
 
