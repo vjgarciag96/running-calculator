@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { formatDuration, parseDuration } from '../src/format.ts';
+import { formatDuration, parseDuration, parsePace } from '../src/format.ts';
 
 test('parseDuration reads m:ss and h:mm:ss', () => {
   assert.deepEqual(parseDuration('50:00'), { ok: true, value: 3000 });
@@ -46,6 +46,22 @@ test('bare digits follow the same range rules as colons', () => {
   assert.deepEqual(parseDuration('19000'), { ok: false, error: 'out-of-range' });
   assert.deepEqual(parseDuration('0'), { ok: false, error: 'out-of-range' });
   assert.deepEqual(parseDuration('000'), { ok: false, error: 'out-of-range' });
+});
+
+test('parsePace reads m:ss', () => {
+  assert.deepEqual(parsePace('4:30'), { ok: true, value: 270 });
+  assert.deepEqual(parsePace('12:30'), { ok: true, value: 750 });
+});
+
+test('parsePace reads bare digits filled from the right', () => {
+  assert.deepEqual(parsePace('430'), { ok: true, value: 270 });
+  assert.deepEqual(parsePace('1230'), { ok: true, value: 750 });
+});
+
+test('parsePace rejects bad input with a typed error', () => {
+  assert.deepEqual(parsePace('575'), { ok: false, error: 'out-of-range' });
+  assert.deepEqual(parsePace('5:75'), { ok: false, error: 'out-of-range' });
+  assert.deepEqual(parsePace(''), { ok: false, error: 'empty' });
 });
 
 test('formatDuration rounds to the second', () => {

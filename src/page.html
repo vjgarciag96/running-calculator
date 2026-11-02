@@ -29,6 +29,10 @@
       </fieldset>
       <fieldset>
         <legend data-t="goal">Goal</legend>
+        <div class="chips toggle">
+          <label><input type="radio" name="mode" value="time" checked><span data-t="time">Finish time</span></label>
+          <label><input type="radio" name="mode" value="pace"><span data-t="pace">Pace</span></label>
+        </div>
         <label for="goal" data-t="timeField">Finish time</label>
         <input id="goal" name="goal" value="5000" maxlength="8" inputmode="numeric" enterkeyhint="done" autocomplete="off" aria-describedby="hint message">
         <p id="hint" data-t="timeHint">Digits fill from the right: 13456 is 1:34:56.</p>

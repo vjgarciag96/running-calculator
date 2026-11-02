@@ -1,4 +1,4 @@
-import type { Seconds } from './pace.ts';
+import type { Seconds, SecondsPerKm } from './pace.ts';
 
 export type Result<T, E> = { ok: true; value: T } | { ok: false; error: E };
 
@@ -11,6 +11,11 @@ export type ParseError = 'empty' | 'malformed' | 'out-of-range';
  */
 export function parseDuration(text: string): Result<Seconds, ParseError> {
   return parseClock(text) as Result<Seconds, ParseError>;
+}
+
+/** A pace per km as 'mm:ss', with the same rules as parseDuration: '4:30', '12:30', '430'. */
+export function parsePace(text: string): Result<SecondsPerKm, ParseError> {
+  return parseClock(text) as Result<SecondsPerKm, ParseError>;
 }
 
 function parseClock(text: string): Result<number, ParseError> {

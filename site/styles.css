@@ -66,6 +66,11 @@ label[for] {
   transition: background-color 0.15s, color 0.15s;
 }
 
+.toggle label {
+  flex: 1;
+  border-radius: 0.75rem;
+}
+
 .chips input {
   appearance: none;
   position: absolute;
