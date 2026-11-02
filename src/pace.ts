@@ -61,7 +61,8 @@ export function calculate(meters: Meters, goal: Goal): Calculation {
 }
 
 function paceFor(seconds: Seconds, meters: Meters): SecondsPerKm {
-  return ((seconds / meters) * 1000) as SecondsPerKm;
+  // The same sum as the first km's cumulative time, so the two can't round to different seconds.
+  return (seconds * (1000 / meters)) as SecondsPerKm;
 }
 
 function timeFor(secondsPerKm: SecondsPerKm, meters: Meters): Seconds {
