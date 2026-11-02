@@ -23,6 +23,19 @@ test('half marathon at 4:30/km finishes in 1:34:56 with a 97.5 m last split', ()
   assert.equal(last.cumulativeSeconds, c.finishSeconds);
 });
 
+test('10 km in 1:23:25 gives the first km the same time as its split, total and pace', () => {
+  // 500.5 s is a tie when rounding to the second, so any float drift between the three
+  // would show 8:20 in one column and 8:21 in another.
+  const c = calculate(DISTANCES['10k'].meters, { kind: 'time', seconds: 5005 as Seconds });
+
+  const first = c.splits[0];
+  assert.deepEqual(
+    [first.seconds, first.cumulativeSeconds, c.secondsPerKm],
+    [500.5, 500.5, 500.5],
+    'split, total and pace for the first km',
+  );
+});
+
 test('time to pace round trip gives back the same pace', () => {
   // Floating point can be off in the last digit (the marathon at 890 s/km comes back as
   // 890.0000000000001), far below the second the UI shows, so compare with a tolerance.
