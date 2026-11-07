@@ -34,7 +34,15 @@
           <label><input type="radio" name="mode" value="pace"><span data-t="pace">Pace</span></label>
         </div>
         <label for="goal" data-t="timeField">Finish time</label>
-        <input id="goal" name="goal" value="5000" maxlength="8" inputmode="numeric" enterkeyhint="done" autocomplete="off" aria-describedby="hint message">
+        <div class="clock">
+          <div class="pairs" aria-hidden="true">
+            <span class="pair hh"><span><span class="zeros"></span><span></span></span><small>hh</small></span><span class="colon hh">:</span>
+            <span class="pair"><span><span class="zeros"></span><span></span></span><small>mm</small></span><span class="colon">:</span>
+            <span class="pair"><span><span class="zeros"></span><span></span></span><small>ss</small></span>
+          </div>
+          <input id="goal" name="goal" value="5000" inputmode="numeric" enterkeyhint="done" autocomplete="off" aria-describedby="spoken hint message">
+        </div>
+        <span id="spoken" class="visually-hidden"></span>
         <p id="hint" data-t="timeHint">Digits fill from the right: 13456 is 1:34:56.</p>
         <p id="message"></p>
       </fieldset>

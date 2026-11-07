@@ -16,7 +16,6 @@ const en = {
   paceField: 'Pace per km',
   timeHint: 'Digits fill from the right: 13456 is 1:34:56.',
   paceHint: 'Digits fill from the right: 430 is 4:30.',
-  malformed: 'Type digits, like 430, or a time like 4:30.',
   'out-of-range': 'Minutes and seconds go up to 59, and the time must be above 0.',
   paceResult: 'Pace',
   finishResult: 'Finish',
@@ -44,7 +43,6 @@ const es: Messages = {
   paceField: 'Ritmo por km',
   timeHint: 'Los dígitos se rellenan desde la derecha: 13456 es 1:34:56.',
   paceHint: 'Los dígitos se rellenan desde la derecha: 430 es 4:30.',
-  malformed: 'Escribe dígitos, como 430, o un tiempo como 4:30.',
   'out-of-range':
     'Los minutos y los segundos llegan hasta 59, y el tiempo tiene que ser mayor que 0.',
   paceResult: 'Ritmo',

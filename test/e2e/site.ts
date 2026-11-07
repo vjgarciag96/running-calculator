@@ -55,3 +55,9 @@ export async function openPage(browser: Browser, site: Site): Promise<Page> {
   await page.goto(`${site.origin}/en/`);
   return page;
 }
+
+/** The digits the goal box shows, as the user reads them: '00:45:00', or '04:30' for a pace. */
+export async function boxText(page: Page): Promise<string> {
+  const pairs = await page.locator('.pair:visible > :first-child').allTextContents();
+  return pairs.join(':');
+}

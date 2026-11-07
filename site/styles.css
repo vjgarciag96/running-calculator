@@ -100,23 +100,74 @@ input:focus-visible {
   outline-offset: 2px;
 }
 
-#goal {
-  display: block;
-  width: 100%;
-  min-height: 48px;
+/* The box is drawn under the real input, which is invisible but takes every tap and key. */
+.clock {
+  position: relative;
   margin-top: 0.25rem;
-  padding: 0.25rem 0.75rem;
-  border: 2px solid var(--line);
-  border-radius: 0.75rem;
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  font-size: 1.5rem;
-  font-variant-numeric: tabular-nums;
 }
 
-#goal[aria-invalid='true'] {
+.pairs {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 0.25rem;
+  padding: 0.5rem 0.75rem 0.25rem;
+  border: 2px solid var(--line);
+  border-radius: 0.75rem;
+  font-family: ui-monospace, monospace;
+  font-size: 2rem;
+  line-height: 1.2;
+}
+
+.pair {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.pair small {
+  color: var(--muted);
+  font-family: system-ui, sans-serif;
+  font-size: 0.75rem;
+}
+
+/* Zeros the user hasn't typed, so 00:00:45 shows which digits are theirs. */
+.zeros {
+  color: var(--muted);
+}
+
+fieldset:has([value='pace']:checked) .hh {
+  display: none;
+}
+
+#goal {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border: 0;
+  opacity: 0;
+  /* iOS zooms into inputs under 16px when they get focus. */
+  font-size: 1rem;
+}
+
+.clock:has(:focus-visible) .pairs {
+  outline: 2px solid var(--fg);
+  outline-offset: 2px;
+}
+
+.clock:has([aria-invalid='true']) .pairs {
   border-color: var(--accent);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 #hint,

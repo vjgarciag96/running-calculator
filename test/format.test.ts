@@ -1,67 +1,84 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { formatDuration, formatKm, parseDuration, parsePace } from '../src/format.ts';
+import {
+  formatDuration,
+  formatKm,
+  keepDigits,
+  parseDuration,
+  parsePace,
+  toPairs,
+} from '../src/format.ts';
 import type { Meters } from '../src/pace.ts';
 
-test('parseDuration reads m:ss and h:mm:ss', () => {
-  assert.deepEqual(parseDuration('50:00'), { ok: true, value: 3000 });
-  assert.deepEqual(parseDuration('1:34:56'), { ok: true, value: 5696 });
-  assert.deepEqual(parseDuration('10:00:00'), { ok: true, value: 36000 });
-  assert.deepEqual(parseDuration(' 4:30 '), { ok: true, value: 270 });
-  assert.deepEqual(parseDuration('90:00'), { ok: true, value: 5400 });
-  assert.deepEqual(parseDuration('100:00'), { ok: true, value: 6000 });
+test('keepDigits drops everything that is not a digit', () => {
+  assert.equal(keepDigits(' 4:30 ', 'time'), '430');
 });
 
-test('parseDuration rejects bad input with a typed error', () => {
-  assert.deepEqual(parseDuration('5:75'), { ok: false, error: 'out-of-range' });
-  assert.deepEqual(parseDuration('4:60'), { ok: false, error: 'out-of-range' });
-  assert.deepEqual(parseDuration('1:60:00'), { ok: false, error: 'out-of-range' });
-  assert.deepEqual(parseDuration('0:00'), { ok: false, error: 'out-of-range' });
-  assert.deepEqual(parseDuration('abc'), { ok: false, error: 'malformed' });
-  assert.deepEqual(parseDuration('4.30'), { ok: false, error: 'malformed' });
-  assert.deepEqual(parseDuration('1:02:03:04'), { ok: false, error: 'malformed' });
-  assert.deepEqual(parseDuration(''), { ok: false, error: 'empty' });
-  assert.deepEqual(parseDuration('   '), { ok: false, error: 'empty' });
+test('keepDigits keeps the first six digits of a finish time', () => {
+  assert.equal(keepDigits('1234567', 'time'), '123456');
 });
 
-test('parseDuration needs two digits after each colon', () => {
-  assert.deepEqual(parseDuration('4:3'), { ok: false, error: 'malformed' });
-  assert.deepEqual(parseDuration('4:300'), { ok: false, error: 'malformed' });
-  assert.deepEqual(parseDuration('1:2:03'), { ok: false, error: 'malformed' });
-  assert.deepEqual(parseDuration('1:02:3'), { ok: false, error: 'malformed' });
-  assert.deepEqual(parseDuration('4:03'), { ok: true, value: 243 });
+test('keepDigits keeps the first four digits of a pace', () => {
+  assert.equal(keepDigits('12345', 'pace'), '1234');
 });
 
-test('parseDuration reads bare digits filled from the right', () => {
-  assert.deepEqual(parseDuration('45'), { ok: true, value: 45 });
-  assert.deepEqual(parseDuration('430'), { ok: true, value: 270 });
-  assert.deepEqual(parseDuration('5000'), { ok: true, value: 3000 });
-  assert.deepEqual(parseDuration('9000'), { ok: true, value: 5400 });
+test('toPairs fills a finish time from the right', () => {
+  assert.deepEqual(toPairs('4500', 'time'), ['00', '45', '00']);
+});
+
+test('toPairs fills a pace from the right', () => {
+  assert.deepEqual(toPairs('430', 'pace'), ['04', '30']);
+});
+
+test('toPairs shows only the first digits that fit', () => {
+  assert.deepEqual(toPairs('1234567', 'time'), ['12', '34', '56']);
+});
+
+test('toPairs shows all zeros for no digits', () => {
+  assert.deepEqual(toPairs('', 'time'), ['00', '00', '00']);
+});
+
+test('parseDuration reads the digits as hh:mm:ss', () => {
   assert.deepEqual(parseDuration('13456'), { ok: true, value: 5696 });
-  assert.deepEqual(parseDuration('100000'), { ok: true, value: 36000 });
-  assert.deepEqual(parseDuration(' 430 '), { ok: true, value: 270 });
 });
 
-test('bare digits follow the same range rules as colons', () => {
+test('parseDuration reads up to 99:59:59', () => {
+  assert.deepEqual(parseDuration('995959'), { ok: true, value: 359999 });
+});
+
+test('parseDuration rejects 60 seconds or more', () => {
   assert.deepEqual(parseDuration('575'), { ok: false, error: 'out-of-range' });
-  assert.deepEqual(parseDuration('19000'), { ok: false, error: 'out-of-range' });
-  assert.deepEqual(parseDuration('0'), { ok: false, error: 'out-of-range' });
+});
+
+test('parseDuration rejects 60 minutes or more', () => {
+  assert.deepEqual(parseDuration('9000'), { ok: false, error: 'out-of-range' });
+});
+
+test('parseDuration rejects a time of zero', () => {
   assert.deepEqual(parseDuration('000'), { ok: false, error: 'out-of-range' });
 });
 
-test('parsePace reads m:ss', () => {
-  assert.deepEqual(parsePace('4:30'), { ok: true, value: 270 });
-  assert.deepEqual(parsePace('12:30'), { ok: true, value: 750 });
+test('parseDuration of no digits is empty', () => {
+  assert.deepEqual(parseDuration(''), { ok: false, error: 'empty' });
 });
 
-test('parsePace reads bare digits filled from the right', () => {
+test('parsePace reads the digits as mm:ss', () => {
   assert.deepEqual(parsePace('430'), { ok: true, value: 270 });
-  assert.deepEqual(parsePace('1230'), { ok: true, value: 750 });
 });
 
-test('parsePace rejects bad input with a typed error', () => {
+test('parsePace reads up to 99:59', () => {
+  assert.deepEqual(parsePace('9959'), { ok: true, value: 5999 });
+});
+
+test('parsePace rejects 60 seconds or more', () => {
   assert.deepEqual(parsePace('575'), { ok: false, error: 'out-of-range' });
-  assert.deepEqual(parsePace('5:75'), { ok: false, error: 'out-of-range' });
+});
+
+test('parsePace rejects a pace of zero', () => {
+  assert.deepEqual(parsePace('0000'), { ok: false, error: 'out-of-range' });
+});
+
+test('parsePace of no digits is empty', () => {
   assert.deepEqual(parsePace(''), { ok: false, error: 'empty' });
 });
 

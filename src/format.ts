@@ -1,54 +1,50 @@
-import type { Meters, Seconds, SecondsPerKm } from './pace.ts';
+import type { Goal, Meters, Seconds, SecondsPerKm } from './pace.ts';
 import type { Locale } from './strings.ts';
 
 export type Result<T, E> = { ok: true; value: T } | { ok: false; error: E };
 
-export type ParseError = 'empty' | 'malformed' | 'out-of-range';
+export type ParseError = 'empty' | 'out-of-range';
+
+/** How many digits the goal box holds: hh mm ss for a finish time, mm ss for a pace. */
+export const MAX_DIGITS: Record<Goal['kind'], number> = { time: 6, pace: 4 };
+
+/** What the goal field may hold: only digits, the first ones that fit. '4:30' → '430'. */
+export function keepDigits(text: string, kind: Goal['kind']): string {
+  return text.replace(/\D/g, '').slice(0, MAX_DIGITS[kind]);
+}
 
 /**
- * 'mm:ss' or 'hh:mm:ss' → seconds (> 0). The first number takes any number of digits, the rest
- * exactly two: '4:30', '50:00', '1:34:56'. Bare digits fill from the right, since phone number
- * pads have no ':': '430' is 4:30, '13456' is 1:34:56. Trims whitespace.
+ * Digits filled from the right, since phone number pads have no ':', and split into the box's
+ * pairs: '4500' → ['00', '45', '00'] for a finish time, '430' → ['04', '30'] for a pace.
  */
-export function parseDuration(text: string): Result<Seconds, ParseError> {
-  return parseClock(text) as Result<Seconds, ParseError>;
+export function toPairs(digits: string, kind: Goal['kind']): string[] {
+  return digits.slice(0, MAX_DIGITS[kind]).padStart(MAX_DIGITS[kind], '0').match(/../g)!;
 }
 
-/** A pace per km as 'mm:ss', with the same rules as parseDuration: '4:30', '12:30', '430'. */
-export function parsePace(text: string): Result<SecondsPerKm, ParseError> {
-  return parseClock(text) as Result<SecondsPerKm, ParseError>;
+/** Digits as hh:mm:ss → seconds (> 0): '13456' is 1:34:56. */
+export function parseDuration(digits: string): Result<Seconds, ParseError> {
+  const [hours, minutes, seconds] = toPairs(digits, 'time').map(Number);
+  const total = hours * 3600 + minutes * 60 + seconds;
+  return check<Seconds>(digits, total, minutes < 60 && seconds < 60);
 }
 
-function parseClock(text: string): Result<number, ParseError> {
-  const trimmed = text.trim();
-  if (trimmed === '') {
+/** Digits as mm:ss → seconds per km (> 0): '430' is 4:30. */
+export function parsePace(digits: string): Result<SecondsPerKm, ParseError> {
+  const [minutes, seconds] = toPairs(digits, 'pace').map(Number);
+  return check<SecondsPerKm>(digits, minutes * 60 + seconds, seconds < 60);
+}
+
+function check<T extends number>(
+  digits: string,
+  total: number,
+  inRange: boolean,
+): Result<T, ParseError> {
+  if (digits === '') {
     return { ok: false, error: 'empty' };
   }
-  const clock = /^\d+$/.test(trimmed) ? toClock(trimmed) : trimmed;
-  // Two digits after each colon, so a half-typed '4:3' doesn't read as 4:03.
-  if (!/^\d+(:\d{2}){1,2}$/.test(clock)) {
-    return { ok: false, error: 'malformed' };
-  }
-  const parts = clock.split(':').map(Number);
-  const hasHours = parts.length === 3;
-  const [hours, minutes, seconds] = hasHours ? parts : [0, ...parts];
-  // Only the first number is unbounded: '90:00' is fine, '1:90:00' is not.
-  if (seconds >= 60 || (hasHours && minutes >= 60)) {
-    return { ok: false, error: 'out-of-range' };
-  }
-  const total = hours * 3600 + minutes * 60 + seconds;
-  if (!isPositiveFinite(total)) {
-    return { ok: false, error: 'out-of-range' };
-  }
-  return { ok: true, value: total };
-}
-
-/** '45' → '0:45', '430' → '4:30', '13456' → '1:34:56'. */
-function toClock(digits: string): string {
-  const d = digits.padStart(3, '0');
-  return d.length > 4
-    ? `${d.slice(0, -4)}:${d.slice(-4, -2)}:${d.slice(-2)}`
-    : `${d.slice(0, -2)}:${d.slice(-2)}`;
+  return inRange && total > 0
+    ? { ok: true, value: total as T }
+    : { ok: false, error: 'out-of-range' };
 }
 
 /** Rounds to the nearest second first. < 1 h → 'm:ss', otherwise 'h:mm:ss'. */
@@ -64,8 +60,4 @@ export function formatDuration(seconds: number): string {
 export function formatKm(meters: Meters, locale: Locale): string {
   // Four decimals is 0.1 m, so every preset distance shows exactly instead of looking rounded off.
   return new Intl.NumberFormat(locale, { maximumFractionDigits: 4 }).format(meters / 1000);
-}
-
-function isPositiveFinite(n: number): boolean {
-  return Number.isFinite(n) && n > 0;
 }
