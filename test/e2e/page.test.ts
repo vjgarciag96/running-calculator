@@ -6,19 +6,20 @@ import { boxText, openPage, serveSite, type Site } from './site.ts';
 for (const type of [chromium, webkit]) {
   describe(type.name(), () => {
     let site: Site;
-    let browser: Browser;
+    let browser: Browser | undefined;
     let page: Page;
 
     before(async () => {
       site = await serveSite();
       browser = await type.launch({ chromiumSandbox: true });
     });
+    // A browser that failed to launch must not keep the server open, or the run never exits.
     after(async () => {
-      await browser.close();
+      await browser?.close();
       await site.close();
     });
     beforeEach(async () => {
-      page = await openPage(browser, site);
+      page = await openPage(browser!, site);
     });
     afterEach(async () => {
       await page.context().close();
@@ -79,12 +80,13 @@ for (const type of [chromium, webkit]) {
       assert.equal(await field.inputValue(), '430');
     });
 
-    test('tapping the box types into the goal', async () => {
+    test('tapping the middle of the box types after the digits', async () => {
       const box = (await page.locator('.pairs').boundingBox())!;
-
       await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
 
-      assert.equal(await page.evaluate(() => document.activeElement?.id), 'goal');
+      await page.keyboard.press('1');
+
+      assert.equal(await page.locator('#goal').inputValue(), '50001');
     });
 
     test('zeros the user has not typed are dimmed', async () => {
@@ -145,7 +147,7 @@ for (const type of [chromium, webkit]) {
     test('a pace has no hours', async () => {
       await page.getByRole('radio', { name: 'Pace', exact: true }).click();
 
-      assert.equal(await page.getByText('hh', { exact: true }).isVisible(), false);
+      assert.equal(await page.locator('.hh:visible').count(), 0, 'hh pair or its colon shown');
     });
   });
 }
