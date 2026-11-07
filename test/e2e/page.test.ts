@@ -97,6 +97,41 @@ for (const type of [chromium, webkit]) {
       assert.equal(dimmed.join(''), '0000');
     });
 
+    test('zeros the user has not typed are a different colour from the typed digits', async () => {
+      const field = page.locator('#goal');
+      await field.fill('');
+
+      await field.pressSequentially('45');
+
+      const colour = (selector: string) =>
+        page.locator(selector).last().evaluate((element) => getComputedStyle(element).color);
+      assert.notEqual(
+        await colour('.pair:visible .zeros'),
+        await colour('.pair:visible .zeros + span'),
+        'untyped zeros and typed digits share a colour',
+      );
+    });
+
+    test('switching a six-digit finish time to a pace keeps the first four digits', async () => {
+      const field = page.locator('#goal');
+      await field.fill('');
+      await field.pressSequentially('123456');
+
+      await page.getByRole('radio', { name: 'Pace', exact: true }).click();
+
+      assert.equal(await field.inputValue(), '1234');
+    });
+
+    test('switching a six-digit finish time to a pace shows its first four digits', async () => {
+      const field = page.locator('#goal');
+      await field.fill('');
+      await field.pressSequentially('123456');
+
+      await page.getByRole('radio', { name: 'Pace', exact: true }).click();
+
+      assert.equal(await boxText(page), '12:34');
+    });
+
     test('typing 430 as a pace shows 04:30', async () => {
       await page.getByRole('radio', { name: 'Pace', exact: true }).click();
       const field = page.locator('#goal');
