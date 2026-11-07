@@ -11,7 +11,9 @@ for (const type of [chromium, webkit]) {
 
     before(async () => {
       site = await serveSite();
-      browser = await type.launch({ chromiumSandbox: true });
+      // GitHub's Ubuntu runner can't start Chromium's sandbox. The pages only reach our own
+      // server, so the sandbox has nothing untrusted to contain.
+      browser = await type.launch({ chromiumSandbox: false });
     });
     // A browser that failed to launch must not keep the server open, or the run never exits.
     after(async () => {
