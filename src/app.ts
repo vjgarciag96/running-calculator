@@ -73,13 +73,14 @@ function render(inputs: Inputs): void {
 }
 
 function renderBox({ mode, digits }: Inputs): void {
-  // Six digits in both modes: in pace mode the hh pair is hidden, so its zeros never show.
-  const all = digits.padStart(6, '0');
+  // Two strings lined up with the box's six places: the zeros the user hasn't typed, and the
+  // digits they have. In pace mode the hh pair is hidden, so its zeros never show.
+  const untyped = '0'.repeat(6 - digits.length);
+  const typedDigits = digits.padStart(6);
   pairs.forEach((pair, i) => {
     const [zeros, typed] = pair.children;
-    const cut = Math.min(2, Math.max(0, 6 - digits.length - 2 * i));
-    zeros.textContent = all.slice(2 * i, 2 * i + cut);
-    typed.textContent = all.slice(2 * i + cut, 2 * i + 2);
+    zeros.textContent = untyped.slice(2 * i, 2 * i + 2);
+    typed.textContent = typedDigits.slice(2 * i, 2 * i + 2).trimStart();
   });
   // Read as '45:00' rather than '4500', without the hours when there are none.
   spoken.textContent = digits && toPairs(digits, mode).join(':').replace(/^00:(?=\d\d:)/, '');
