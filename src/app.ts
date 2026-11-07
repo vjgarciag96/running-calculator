@@ -1,4 +1,4 @@
-import { formatDuration, formatKm, keepDigits, MAX_DIGITS, toPairs } from './format.ts';
+import { formatDuration, formatKm, keepDigits, toPairs } from './format.ts';
 import { DEFAULT_INPUTS, type Inputs, toGoal } from './inputs.ts';
 import { calculate, DISTANCES, type Goal, type PresetId, type Split } from './pace.ts';
 import { type Locale, STRINGS } from './strings.ts';
@@ -72,18 +72,17 @@ function render(inputs: Inputs): void {
   splits.replaceChildren(...c.splits.map(row));
 }
 
-// Pace mode hides the hh pair, so its digits go in the last two pairs.
 function renderBox({ mode, digits }: Inputs): void {
-  const shown = toPairs(digits, mode);
-  const untyped = MAX_DIGITS[mode] - digits.length;
-  shown.forEach((pair, i) => {
-    const [zeros, typed] = pairs[pairs.length - shown.length + i].children;
-    const cut = Math.min(2, Math.max(0, untyped - 2 * i));
-    zeros.textContent = pair.slice(0, cut);
-    typed.textContent = pair.slice(cut);
+  // Six digits in both modes: in pace mode the hh pair is hidden, so its zeros never show.
+  const all = digits.padStart(6, '0');
+  pairs.forEach((pair, i) => {
+    const [zeros, typed] = pair.children;
+    const cut = Math.min(2, Math.max(0, 6 - digits.length - 2 * i));
+    zeros.textContent = all.slice(2 * i, 2 * i + cut);
+    typed.textContent = all.slice(2 * i + cut, 2 * i + 2);
   });
   // Read as '45:00' rather than '4500', without the hours when there are none.
-  spoken.textContent = digits && shown.join(':').replace(/^00:(?=\d\d:)/, '');
+  spoken.textContent = digits && toPairs(digits, mode).join(':').replace(/^00:(?=\d\d:)/, '');
 }
 
 function row(split: Split): HTMLTableRowElement {
