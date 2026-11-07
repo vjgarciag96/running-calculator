@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { after, afterEach, before, beforeEach, describe, test } from 'node:test';
 import { type Browser, chromium, type Page, webkit } from 'playwright';
-import { accessibleDescription, boxText, openPage, serveSite, type Site } from './site.ts';
+import { boxText, openPage, serveSite, type Site } from './site.ts';
 
 for (const type of [chromium, webkit]) {
   describe(type.name(), () => {
@@ -95,15 +95,6 @@ for (const type of [chromium, webkit]) {
 
       const dimmed = await page.locator('.pair:visible .zeros').allTextContents();
       assert.equal(dimmed.join(''), '0000');
-    });
-
-    test('screen readers hear 4500 as 45:00', async () => {
-      const field = page.locator('#goal');
-      await field.fill('');
-
-      await field.pressSequentially('4500');
-
-      assert.match(await accessibleDescription(page, '#goal'), /^45:00 /);
     });
 
     test('typing 430 as a pace shows 04:30', async () => {

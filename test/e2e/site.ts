@@ -61,13 +61,3 @@ export async function boxText(page: Page): Promise<string> {
   const pairs = await page.locator('.pair:visible > :first-child').allTextContents();
   return pairs.join(':');
 }
-
-/** What screen readers read after the element's name: the text of each aria-describedby id. */
-export async function accessibleDescription(page: Page, selector: string): Promise<string> {
-  return page.locator(selector).evaluate((element) =>
-    (element.getAttribute('aria-describedby') ?? '')
-      .split(' ')
-      .map((id) => document.getElementById(id)?.textContent ?? '')
-      .join(' ')
-  );
-}

@@ -1,4 +1,4 @@
-import { formatDuration, formatKm, keepDigits, toPairs } from './format.ts';
+import { formatDuration, formatKm, keepDigits } from './format.ts';
 import { DEFAULT_INPUTS, type Inputs, toGoal } from './inputs.ts';
 import { calculate, DISTANCES, type Goal, type PresetId, type Split } from './pace.ts';
 import { type Locale, STRINGS } from './strings.ts';
@@ -13,7 +13,6 @@ const modes = form.elements.namedItem('mode') as RadioNodeList;
 const field = form.elements.namedItem('goal') as HTMLInputElement;
 const label = document.querySelector('label[for=goal]')!;
 const pairs = document.querySelectorAll('.pair > :first-child');
-const spoken = document.getElementById('spoken')!;
 const hint = document.getElementById('hint')!;
 const message = document.getElementById('message')!;
 const pace = document.getElementById('pace') as HTMLOutputElement;
@@ -72,7 +71,7 @@ function render(inputs: Inputs): void {
   splits.replaceChildren(...c.splits.map(row));
 }
 
-function renderBox({ mode, digits }: Inputs): void {
+function renderBox({ digits }: Inputs): void {
   // Two strings lined up with the box's six places: the zeros the user hasn't typed, and the
   // digits they have. In pace mode the hh pair is hidden, so its zeros never show.
   const untyped = '0'.repeat(6 - digits.length);
@@ -82,8 +81,6 @@ function renderBox({ mode, digits }: Inputs): void {
     zeros.textContent = untyped.slice(2 * i, 2 * i + 2);
     typed.textContent = typedDigits.slice(2 * i, 2 * i + 2).trimStart();
   });
-  // Read as '45:00' rather than '4500', without the hours when there are none.
-  spoken.textContent = digits && toPairs(digits, mode).join(':').replace(/^00:(?=\d\d:)/, '');
 }
 
 function row(split: Split): HTMLTableRowElement {
