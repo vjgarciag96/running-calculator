@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { extname, join, normalize } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type { Browser, Page } from 'playwright';
 
 export interface Site {
@@ -11,7 +12,7 @@ export interface Site {
   close(): Promise<void>;
 }
 
-const ROOT = new URL('../../site/', import.meta.url).pathname;
+const ROOT = fileURLToPath(new URL('../../site/', import.meta.url));
 const TYPES: Record<string, string> = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'text/javascript',
@@ -22,9 +23,9 @@ const TYPES: Record<string, string> = {
 /** site/ on 127.0.0.1 at a free port, so nothing outside this machine can reach it. */
 export async function serveSite(): Promise<Site> {
   const server = createServer(async (request, response) => {
-    const path = normalize(decodeURIComponent(new URL(request.url!, 'http://x').pathname));
-    const file = join(ROOT, path.endsWith('/') ? `${path}index.html` : path);
     try {
+      const path = normalize(decodeURIComponent(new URL(request.url!, 'http://x').pathname));
+      const file = join(ROOT, path.endsWith('/') ? `${path}index.html` : path);
       const body = await readFile(file);
       response.writeHead(200, { 'content-type': TYPES[extname(file)] ?? 'text/plain' });
       response.end(body);
