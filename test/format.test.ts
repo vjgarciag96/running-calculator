@@ -54,8 +54,8 @@ test('parseDuration rejects 60 minutes or more', () => {
   assert.deepEqual(parseDuration('9000'), { ok: false, error: 'out-of-range' });
 });
 
-test('parseDuration rejects a time of zero', () => {
-  assert.deepEqual(parseDuration('000'), { ok: false, error: 'out-of-range' });
+test('parseDuration reads a time of zero as empty', () => {
+  assert.deepEqual(parseDuration('000'), { ok: false, error: 'empty' });
 });
 
 test('parseDuration of no digits is empty', () => {
@@ -74,8 +74,8 @@ test('parsePace rejects 60 seconds or more', () => {
   assert.deepEqual(parsePace('575'), { ok: false, error: 'out-of-range' });
 });
 
-test('parsePace rejects a pace of zero', () => {
-  assert.deepEqual(parsePace('0000'), { ok: false, error: 'out-of-range' });
+test('parsePace reads a pace of zero as empty', () => {
+  assert.deepEqual(parsePace('0000'), { ok: false, error: 'empty' });
 });
 
 test('parsePace of no digits is empty', () => {

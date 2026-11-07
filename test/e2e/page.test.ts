@@ -136,6 +136,15 @@ for (const type of [chromium, webkit]) {
       assert.equal(await boxText(page), '12:34');
     });
 
+    test('typing a leading zero shows no error', async () => {
+      const field = page.locator('#goal');
+      await field.fill('');
+
+      await field.press('0');
+
+      assert.equal(await page.locator('#message').textContent(), '');
+    });
+
     test('typing 430 as a pace shows 04:30', async () => {
       await page.getByRole('radio', { name: 'Pace', exact: true }).click();
       const field = page.locator('#goal');

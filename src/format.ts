@@ -25,24 +25,22 @@ export function toPairs(digits: string, kind: Goal['kind']): string[] {
 export function parseDuration(digits: string): Result<Seconds, ParseError> {
   const [hours, minutes, seconds] = toPairs(digits, 'time').map(Number);
   const total = hours * 3600 + minutes * 60 + seconds;
-  return check<Seconds>(digits, total, minutes < 60 && seconds < 60);
+  return check<Seconds>(total, minutes < 60 && seconds < 60);
 }
 
 /** Digits as mm:ss → seconds per km (> 0): '430' is 4:30. */
 export function parsePace(digits: string): Result<SecondsPerKm, ParseError> {
   const [minutes, seconds] = toPairs(digits, 'pace').map(Number);
-  return check<SecondsPerKm>(digits, minutes * 60 + seconds, seconds < 60);
+  return check<SecondsPerKm>(minutes * 60 + seconds, seconds < 60);
 }
 
-function check<T extends number>(
-  digits: string,
-  total: number,
-  inRange: boolean,
-): Result<T, ParseError> {
-  if (digits === '') {
+function check<T extends number>(total: number, inRange: boolean): Result<T, ParseError> {
+  // The box shows zeros, so people type them first. Until errors wait for the user to finish
+  // (#20), reading those as out of range would flash an error on the way to a valid time.
+  if (total === 0) {
     return { ok: false, error: 'empty' };
   }
-  return inRange && total > 0
+  return inRange
     ? { ok: true, value: total as T }
     : { ok: false, error: 'out-of-range' };
 }
