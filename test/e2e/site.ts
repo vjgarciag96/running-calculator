@@ -57,6 +57,11 @@ export async function openPage(browser: Browser, site: Site): Promise<Page> {
   return page;
 }
 
+/** Resolves once the goal box is highlighted, and throws if it never is. Browsers report selection changes a moment late. */
+export async function boxHighlighted(page: Page): Promise<void> {
+  await page.locator('.clock.selected').waitFor({ state: 'attached', timeout: 2000 });
+}
+
 /** The digits the goal box shows, as the user reads them: '00:45:00', or '04:30' for a pace. */
 export async function boxText(page: Page): Promise<string> {
   const pairs = await page.locator('.pair:visible > :first-child').allTextContents();
