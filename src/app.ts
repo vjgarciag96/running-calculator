@@ -11,6 +11,7 @@ const form = document.querySelector('form')!;
 const presets = form.elements.namedItem('preset') as RadioNodeList;
 const modes = form.elements.namedItem('mode') as RadioNodeList;
 const field = form.elements.namedItem('goal') as HTMLInputElement;
+const clock = document.querySelector('.clock')!;
 const label = document.querySelector('label[for=goal]')!;
 const pairs = document.querySelectorAll('.pair > :first-child');
 const hint = document.getElementById('hint')!;
@@ -32,9 +33,41 @@ form.addEventListener('input', () => {
     field.value = inputs.digits;
   }
   render(inputs);
+  syncSelection();
 });
 // Results are live, so Enter has nothing to submit and would only reload the page.
 form.addEventListener('submit', (event) => event.preventDefault());
+// On click because a tap places its caret after focus, which would undo a selection made then.
+field.addEventListener('click', () => {
+  field.select();
+  // Selecting what is already selected fires no selectionchange.
+  syncSelection();
+});
+// WebKit collapses a selection pressed inside just after the click, undoing the select above.
+field.addEventListener('mousedown', (event) => {
+  if (document.activeElement === field) {
+    event.preventDefault();
+  }
+});
+// Left alone, a letter over a selection would replace the value and then be stripped, losing it.
+field.addEventListener('beforeinput', (event) => {
+  // selectionchange arrives late, so a quick key could still land where the caret was moved.
+  syncSelection();
+  if (event.data && !/\d/.test(event.data)) {
+    event.preventDefault();
+  }
+});
+document.addEventListener('selectionchange', syncSelection);
+
+// Digits fill from the right, so the only caret that means anything is the one after them.
+function syncSelection(): void {
+  const end = field.value.length;
+  const selected = end > 0 && field.selectionStart === 0 && field.selectionEnd === end;
+  if (document.activeElement === field && !selected && field.selectionStart !== end) {
+    field.setSelectionRange(end, end);
+  }
+  clock.classList.toggle('selected', selected);
+}
 
 function readForm(): Inputs {
   const mode = modes.value as Goal['kind'];
