@@ -59,7 +59,14 @@ export async function openPage(browser: Browser, site: Site): Promise<Page> {
 
 /** Resolves once the goal box is highlighted, and throws if it never is. Browsers report selection changes a moment late. */
 export async function boxHighlighted(page: Page): Promise<void> {
-  await page.locator('.clock.selected').waitFor({ state: 'attached', timeout: 2000 });
+  await page.waitForFunction(
+    () => {
+      const digits = [...document.querySelectorAll('.pair > :first-child > :last-child')];
+      return getComputedStyle(digits.at(-1)!).backgroundColor !== 'rgba(0, 0, 0, 0)';
+    },
+    undefined,
+    { timeout: 2000 },
+  );
 }
 
 /** The digits the goal box shows, as the user reads them: '00:45:00', or '04:30' for a pace. */

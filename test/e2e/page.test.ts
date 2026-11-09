@@ -160,6 +160,7 @@ for (const type of [chromium, webkit]) {
     test('leaving a highlighted box removes the highlight', async () => {
       const field = page.locator('#goal');
       await field.tap();
+      await boxHighlighted(page);
 
       await field.blur();
 
@@ -207,11 +208,32 @@ for (const type of [chromium, webkit]) {
       await page.locator('#goal').tap();
       await boxHighlighted(page);
       await page.keyboard.press('ArrowLeft');
-      await page.locator('.clock:not(.selected)').waitFor({ state: 'attached', timeout: 2000 });
 
       await page.keyboard.press('1');
 
       assert.equal(await page.locator('#goal').inputValue(), '50001');
+    });
+
+    test('a digit typed straight after moving the caret goes after the digits', async () => {
+      const field = page.locator('#goal');
+      await field.tap();
+      await field.pressSequentially('5000');
+      await page.keyboard.press('ArrowLeft');
+
+      await page.keyboard.press('1');
+
+      assert.equal(await field.inputValue(), '50001');
+    });
+
+    test('Backspace straight after moving the caret removes the last digit', async () => {
+      const field = page.locator('#goal');
+      await field.tap();
+      await field.pressSequentially('1234');
+      await page.keyboard.press('ArrowLeft');
+
+      await page.keyboard.press('Backspace');
+
+      assert.equal(await field.inputValue(), '123');
     });
 
     test('zeros the user has not typed are dimmed', async () => {

@@ -51,6 +51,8 @@ field.addEventListener('mousedown', (event) => {
 });
 // Left alone, a letter over a selection would replace the value and then be stripped, losing it.
 field.addEventListener('beforeinput', (event) => {
+  // selectionchange arrives late, so a quick key could still land where the caret was moved.
+  syncSelection();
   if (event.data && !/\d/.test(event.data)) {
     event.preventDefault();
   }
