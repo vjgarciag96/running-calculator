@@ -20,6 +20,48 @@ test('page fills every data-t with the locale text', () => {
   assert.match(html, /<span>Media maratón<\/span>/);
 });
 
+test('page has no mode toggle, Goal legend or results block', () => {
+  const html = page(template, 'es');
+
+  assert.doesNotMatch(html, /name="mode"/, 'mode toggle');
+  assert.doesNotMatch(html, /<legend>Objetivo<\/legend>/, 'Goal legend');
+  assert.doesNotMatch(html, /<dl|<output/, 'results block');
+});
+
+test('the Spanish page labels and tags both boxes, with the help line', () => {
+  const html = page(template, 'es');
+
+  assert.match(
+    html,
+    /<label for="time">Tiempo final<\/label><span id="time-tag" class="tag">Tu objetivo<\/span>/,
+  );
+  assert.match(
+    html,
+    /<label for="pace">Ritmo por km<\/label><span id="pace-tag" class="tag">Calculado<\/span>/,
+  );
+  assert.match(
+    html,
+    /<p id="help">Cambia cualquiera de los dos y el otro se ajusta\. Tu objetivo se mantiene al cambiar de distancia\.<\/p>/,
+  );
+});
+
+test('the English page labels and tags both boxes, with the help line', () => {
+  const html = page(template, 'en');
+
+  assert.match(
+    html,
+    /<label for="time">Finish time<\/label><span id="time-tag" class="tag">Your goal<\/span>/,
+  );
+  assert.match(
+    html,
+    /<label for="pace">Pace per km<\/label><span id="pace-tag" class="tag">Calculated<\/span>/,
+  );
+  assert.match(
+    html,
+    /<p id="help">Change either one and the other follows\. Your goal stays put when you switch distance\.<\/p>/,
+  );
+});
+
 test('page fails on a data-t with no string', () => {
   assert.throws(() => page('<p data-t="nope">x</p>', 'en'), /nope/);
 });

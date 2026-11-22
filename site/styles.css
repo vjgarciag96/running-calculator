@@ -32,7 +32,8 @@ h1 {
   margin: 0 0 1rem;
 }
 
-fieldset {
+fieldset,
+.boxes {
   border: 0;
   margin: 0 0 1.25rem;
   padding: 0;
@@ -67,11 +68,6 @@ label[for] {
   transition: background-color 0.15s, color 0.15s;
 }
 
-.toggle label {
-  flex: 1;
-  border-radius: 0.75rem;
-}
-
 .chips input {
   appearance: none;
   position: absolute;
@@ -93,6 +89,26 @@ label[for] {
     background: Highlight;
     color: HighlightText;
   }
+}
+
+.box + .box {
+  margin-top: 1rem;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.tag {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.goal .tag {
+  color: var(--accent);
+  font-weight: 600;
 }
 
 input:focus-visible {
@@ -131,6 +147,13 @@ input:focus-visible {
   font-size: 0.75rem;
 }
 
+.unit {
+  align-self: center;
+  color: var(--muted);
+  font-family: system-ui, sans-serif;
+  font-size: 1rem;
+}
+
 /* Zeros the user hasn't typed, so 00:00:45 shows which digits are theirs. */
 .zeros {
   color: var(--muted);
@@ -162,11 +185,7 @@ input:focus-visible {
   visibility: visible;
 }
 
-fieldset:has([value='pace']:checked) .hh {
-  display: none;
-}
-
-#goal {
+.clock input {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -187,7 +206,7 @@ fieldset:has([value='pace']:checked) .hh {
   border-color: var(--accent);
 }
 
-#hint,
+#help,
 #message {
   margin: 0.25rem 0 0;
   font-size: 0.875rem;
@@ -200,26 +219,12 @@ fieldset:has([value='pace']:checked) .hh {
   color: var(--accent);
 }
 
-dl {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.5rem;
-  margin: 0 0 1.25rem;
-}
-
 dt,
 th {
   color: var(--muted);
   font-size: 0.875rem;
 }
 
-dd {
-  margin: 0;
-  font-size: 1.75rem;
-  font-weight: 600;
-}
-
-output,
 table {
   font-variant-numeric: tabular-nums;
 }
