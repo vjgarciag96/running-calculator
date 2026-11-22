@@ -57,16 +57,22 @@ export async function openPage(browser: Browser, site: Site): Promise<Page> {
   return page;
 }
 
-/** Resolves once the goal box is highlighted, and throws if it never is. Browsers report selection changes a moment late. */
-export async function boxHighlighted(page: Page): Promise<void> {
+/**
+ * Resolves once the goal box shows as highlighted, or with `false` once it shows as not, and
+ * throws if it never does. Browsers report selection changes a moment late.
+ */
+export async function boxHighlighted(page: Page, highlighted = true): Promise<void> {
   await page.waitForFunction(
-    () => {
+    (highlighted) => {
       const digits = [...document.querySelectorAll('.pair > :first-child > :last-child')];
-      return getComputedStyle(digits.at(-1)!).backgroundColor !== 'rgba(0, 0, 0, 0)';
+      return (getComputedStyle(digits.at(-1)!).backgroundColor !== 'rgba(0, 0, 0, 0)')
+        === highlighted;
     },
-    undefined,
+    highlighted,
     { timeout: 2000 },
-  );
+  ).catch(() => {
+    throw new Error(highlighted ? 'goal box never highlighted' : 'goal box still highlighted');
+  });
 }
 
 /** The digits the goal box shows, as the user reads them: '00:45:00', or '04:30' for a pace. */

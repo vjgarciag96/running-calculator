@@ -103,7 +103,7 @@ for (const type of [chromium, webkit]) {
 
       await page.keyboard.press('4');
 
-      assert.equal(await page.locator('.clock.selected').count(), 0, 'value still highlighted');
+      await boxHighlighted(page, false);
     });
 
     test('tapping a box being typed in highlights it again', async () => {
@@ -127,7 +127,7 @@ for (const type of [chromium, webkit]) {
       assert.equal(await field.inputValue(), '4');
     });
 
-    test('tapping a box after tabbing past it highlights its value', async () => {
+    test('tapping a box focused with Tab highlights its value', async () => {
       const field = page.locator('#goal');
       await page.getByRole('radio', { name: 'Finish time' }).focus();
       await page.keyboard.press('Tab');
@@ -164,10 +164,25 @@ for (const type of [chromium, webkit]) {
 
       await field.blur();
 
-      const background = await page.locator('.pair:visible .zeros + span').last().evaluate(
-        (element) => getComputedStyle(element).backgroundColor,
-      );
-      assert.equal(background, 'rgba(0, 0, 0, 0)');
+      await boxHighlighted(page, false);
+    });
+
+    test('Backspace on a highlighted value leaves an empty box with a caret', async () => {
+      await page.locator('#goal').tap();
+      await boxHighlighted(page);
+
+      await page.keyboard.press('Backspace');
+
+      assert.equal(await page.locator('.caret:visible').count(), 1, 'caret not shown');
+    });
+
+    test('Backspace on a highlighted value leaves an empty box without a highlight', async () => {
+      await page.locator('#goal').tap();
+      await boxHighlighted(page);
+
+      await page.keyboard.press('Backspace');
+
+      await boxHighlighted(page, false);
     });
 
     test('pasting 4:30 over a highlighted value shows 00:04:30', async () => {
