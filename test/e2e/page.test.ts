@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { after, afterEach, before, beforeEach, describe, test } from 'node:test';
 import { type Browser, chromium, type Page, webkit } from 'playwright';
-import { boxHighlighted, boxText, openPage, serveSite, type Site } from './site.ts';
+import { boxHighlighted, boxText, compose, openPage, serveSite, type Site } from './site.ts';
 
 for (const type of [chromium, webkit]) {
   describe(type.name(), () => {
@@ -217,6 +217,67 @@ for (const type of [chromium, webkit]) {
       await page.keyboard.press('a');
 
       assert.equal(await boxText(page), '00:50:00');
+    });
+
+    // Playwright drives an input method only through Chromium's DevTools protocol.
+    const noIme = type !== chromium && 'Playwright cannot compose text in this browser';
+
+    test('composing a word over a highlighted value keeps the value', { skip: noIme }, async () => {
+      await page.locator('#goal').tap();
+      await boxHighlighted(page);
+
+      await compose(page, ['k', 'か'], 'か');
+
+      assert.equal(await boxText(page), '00:50:00');
+    });
+
+    test('composing full-width digits over a highlighted value keeps the value', {
+      skip: noIme,
+    }, async () => {
+      await page.locator('#goal').tap();
+      await boxHighlighted(page);
+
+      await compose(page, ['４', '４５'], '４５');
+
+      assert.equal(await boxText(page), '00:50:00');
+    });
+
+    test('cancelling a composition over a highlighted value keeps the value', {
+      skip: noIme,
+    }, async () => {
+      await page.locator('#goal').tap();
+      await boxHighlighted(page);
+
+      await compose(page, ['あ'], '');
+
+      assert.equal(await boxText(page), '00:50:00');
+    });
+
+    test('composing digits over a highlighted value replaces it', { skip: noIme }, async () => {
+      await page.locator('#goal').tap();
+      await boxHighlighted(page);
+
+      await compose(page, ['4', '45'], '45');
+
+      assert.equal(await page.locator('#goal').inputValue(), '45');
+    });
+
+    test('digits composed at the caret are added once', { skip: noIme }, async () => {
+      await page.locator('#goal').tap();
+      await page.keyboard.press('4');
+
+      await compose(page, ['4', '45'], '45');
+
+      assert.equal(await page.locator('#goal').inputValue(), '445');
+    });
+
+    test('a word composed at the caret is dropped', { skip: noIme }, async () => {
+      await page.locator('#goal').tap();
+      await page.keyboard.press('4');
+
+      await compose(page, ['k', 'か'], 'か');
+
+      assert.equal(await page.locator('#goal').inputValue(), '4');
     });
 
     test('a caret moved before the digits goes back to the end', async () => {

@@ -21,20 +21,15 @@ const finish = document.getElementById('finish') as HTMLOutputElement;
 const splits = document.querySelector('tbody')!;
 
 let inputs = DEFAULT_INPUTS;
+// The field's value when a composition started, kept only until it ends.
+let beforeComposition: string | undefined;
 fill(inputs);
 render(inputs);
 
 // Switching mode reads the digits the other way, so a goal typed before noticing the mode was
 // wrong is still there after switching, except that a pace keeps only the first four. The field
 // gets the kept digits back, so Backspace never removes one the box doesn't show.
-form.addEventListener('input', () => {
-  inputs = readForm();
-  if (field.value !== inputs.digits) {
-    field.value = inputs.digits;
-  }
-  render(inputs);
-  syncSelection();
-});
+form.addEventListener('input', update);
 // Results are live, so Enter has nothing to submit and would only reload the page.
 form.addEventListener('submit', (event) => event.preventDefault());
 // On click because a tap places its caret after focus, which would undo a selection made then.
@@ -58,9 +53,36 @@ field.addEventListener('beforeinput', (event) => {
   }
 });
 document.addEventListener('selectionchange', syncSelection);
+// Composed text (an input method, or a phone keyboard's suggestions) can't be cancelled like a
+// key, so over a highlighted value it replaces it even when it has no digits.
+field.addEventListener('compositionstart', () => {
+  beforeComposition = field.value;
+});
+field.addEventListener('compositionend', () => {
+  if (!/\d/.test(field.value)) {
+    field.value = beforeComposition!;
+  }
+  beforeComposition = undefined;
+  update();
+});
+
+function update(): void {
+  inputs = readForm();
+  // Rewriting the field ends a composition without a compositionend, so it waits for that.
+  if (beforeComposition === undefined && field.value !== inputs.digits) {
+    field.value = inputs.digits;
+  }
+  render(inputs);
+  syncSelection();
+}
 
 // Digits fill from the right, so the only caret that means anything is the one after them.
 function syncSelection(): void {
+  // A composition keeps its text selected until it ends; moving that selection makes the browser
+  // add each update again instead of replacing it.
+  if (beforeComposition !== undefined) {
+    return;
+  }
   const end = field.value.length;
   const selected = end > 0 && field.selectionStart === 0 && field.selectionEnd === end;
   if (document.activeElement === field && !selected && field.selectionStart !== end) {

@@ -75,6 +75,25 @@ export async function boxHighlighted(page: Page, highlighted = true): Promise<vo
   });
 }
 
+/**
+ * Types into the focused field through an input method, as a Japanese keyboard does: each of
+ * `updates` replaces the text being composed, then `commit` ends the composition with that text,
+ * or cancels it when empty. Chromium only.
+ */
+export async function compose(page: Page, updates: string[], commit: string): Promise<void> {
+  const cdp = await page.context().newCDPSession(page);
+  for (const text of updates) {
+    await cdp.send('Input.imeSetComposition', {
+      text,
+      selectionStart: text.length,
+      selectionEnd: text.length,
+    });
+  }
+  await (commit
+    ? cdp.send('Input.insertText', { text: commit })
+    : cdp.send('Input.imeSetComposition', { text: '', selectionStart: 0, selectionEnd: 0 }));
+}
+
 /** The digits the goal box shows, as the user reads them: '00:45:00', or '04:30' for a pace. */
 export async function boxText(page: Page): Promise<string> {
   const pairs = await page.locator('.pair:visible > :first-child').allTextContents();
