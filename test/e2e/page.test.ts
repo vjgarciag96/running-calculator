@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { after, afterEach, before, beforeEach, describe, test } from 'node:test';
 import { type Browser, chromium, type Page, webkit } from 'playwright';
-import { boxText, openPage, serveSite, type Site } from './site.ts';
+import { boxHighlighted, boxText, compose, openPage, serveSite, type Site } from './site.ts';
 
 for (const type of [chromium, webkit]) {
   describe(type.name(), () => {
@@ -82,13 +82,234 @@ for (const type of [chromium, webkit]) {
       assert.equal(await field.inputValue(), '430');
     });
 
-    test('tapping the middle of the box types after the digits', async () => {
-      const box = (await page.locator('.pairs').boundingBox())!;
-      await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
+    test('tapping a filled box highlights its value', async () => {
+      await page.locator('#goal').tap();
+
+      await boxHighlighted(page);
+    });
+
+    test('tapping 50:00 and typing 4500 shows 00:45:00', async () => {
+      const field = page.locator('#goal');
+      await field.tap();
+
+      await field.pressSequentially('4500');
+
+      assert.equal(await boxText(page), '00:45:00');
+    });
+
+    test('the first key clears the highlight', async () => {
+      await page.locator('#goal').tap();
+      await boxHighlighted(page);
+
+      await page.keyboard.press('4');
+
+      await boxHighlighted(page, false);
+    });
+
+    test('tapping a box being typed in highlights it again', async () => {
+      const field = page.locator('#goal');
+      await field.tap();
+      await page.keyboard.press('4');
+
+      await field.tap();
+
+      await boxHighlighted(page);
+    });
+
+    test('tapping a highlighted box again still replaces the value', async () => {
+      const field = page.locator('#goal');
+      await field.tap();
+      await boxHighlighted(page);
+      await field.tap();
+
+      await page.keyboard.press('4');
+
+      assert.equal(await field.inputValue(), '4');
+    });
+
+    test('tapping a box focused with Tab highlights its value', async () => {
+      const field = page.locator('#goal');
+      await page.getByRole('radio', { name: 'Finish time' }).focus();
+      await page.keyboard.press('Tab');
+
+      await field.tap();
+
+      await boxHighlighted(page);
+    });
+
+    test('a highlighted box shows no caret', async () => {
+      await page.locator('#goal').tap();
+
+      await boxHighlighted(page);
+
+      assert.equal(await page.locator('.caret:visible').count(), 0, 'caret shown');
+    });
+
+    test('a box being typed in shows a caret', async () => {
+      await page.locator('#goal').tap();
+
+      await page.keyboard.press('4');
+
+      assert.equal(await page.locator('.caret:visible').count(), 1, 'caret not shown');
+    });
+
+    test('a box without focus shows no caret', async () => {
+      assert.equal(await page.locator('.caret:visible').count(), 0, 'caret shown');
+    });
+
+    test('leaving a highlighted box removes the highlight', async () => {
+      const field = page.locator('#goal');
+      await field.tap();
+      await boxHighlighted(page);
+
+      await field.blur();
+
+      await boxHighlighted(page, false);
+    });
+
+    test('Backspace on a highlighted value leaves an empty box with a caret', async () => {
+      await page.locator('#goal').tap();
+      await boxHighlighted(page);
+
+      await page.keyboard.press('Backspace');
+
+      assert.equal(await page.locator('.caret:visible').count(), 1, 'caret not shown');
+    });
+
+    test('Backspace on a highlighted value leaves an empty box without a highlight', async () => {
+      await page.locator('#goal').tap();
+      await boxHighlighted(page);
+
+      await page.keyboard.press('Backspace');
+
+      await boxHighlighted(page, false);
+    });
+
+    test('pasting 4:30 over a highlighted value shows 00:04:30', async () => {
+      await page.locator('#goal').tap();
+
+      await page.keyboard.insertText('4:30');
+
+      assert.equal(await boxText(page), '00:04:30');
+    });
+
+    test('pasting at the caret keeps only the digits that fit', async () => {
+      const field = page.locator('#goal');
+      await field.tap();
+      await field.pressSequentially('5000');
+
+      await page.keyboard.insertText('4:30');
+
+      assert.equal(await field.inputValue(), '500043');
+    });
+
+    test('pasting text with no digits keeps the value', async () => {
+      await page.locator('#goal').tap();
+
+      await page.keyboard.insertText('abc');
+
+      assert.equal(await boxText(page), '00:50:00');
+    });
+
+    test('a letter on a highlighted box keeps the value', async () => {
+      await page.locator('#goal').tap();
+
+      await page.keyboard.press('a');
+
+      assert.equal(await boxText(page), '00:50:00');
+    });
+
+    // Playwright drives an input method only through Chromium's DevTools protocol.
+    const noIme = type !== chromium && 'Playwright cannot compose text in this browser';
+
+    test('composing a word over a highlighted value keeps the value', { skip: noIme }, async () => {
+      await page.locator('#goal').tap();
+      await boxHighlighted(page);
+
+      await compose(page, ['k', 'か'], 'か');
+
+      assert.equal(await boxText(page), '00:50:00');
+    });
+
+    test('composing full-width digits over a highlighted value keeps the value', {
+      skip: noIme,
+    }, async () => {
+      await page.locator('#goal').tap();
+      await boxHighlighted(page);
+
+      await compose(page, ['４', '４５'], '４５');
+
+      assert.equal(await boxText(page), '00:50:00');
+    });
+
+    test('cancelling a composition over a highlighted value keeps the value', {
+      skip: noIme,
+    }, async () => {
+      await page.locator('#goal').tap();
+      await boxHighlighted(page);
+
+      await compose(page, ['あ'], '');
+
+      assert.equal(await boxText(page), '00:50:00');
+    });
+
+    test('composing digits over a highlighted value replaces it', { skip: noIme }, async () => {
+      await page.locator('#goal').tap();
+      await boxHighlighted(page);
+
+      await compose(page, ['4', '45'], '45');
+
+      assert.equal(await page.locator('#goal').inputValue(), '45');
+    });
+
+    test('digits composed at the caret are added once', { skip: noIme }, async () => {
+      await page.locator('#goal').tap();
+      await page.keyboard.press('4');
+
+      await compose(page, ['4', '45'], '45');
+
+      assert.equal(await page.locator('#goal').inputValue(), '445');
+    });
+
+    test('a word composed at the caret is dropped', { skip: noIme }, async () => {
+      await page.locator('#goal').tap();
+      await page.keyboard.press('4');
+
+      await compose(page, ['k', 'か'], 'か');
+
+      assert.equal(await page.locator('#goal').inputValue(), '4');
+    });
+
+    test('a caret moved before the digits goes back to the end', async () => {
+      await page.locator('#goal').tap();
+      await boxHighlighted(page);
+      await page.keyboard.press('ArrowLeft');
 
       await page.keyboard.press('1');
 
       assert.equal(await page.locator('#goal').inputValue(), '50001');
+    });
+
+    test('a digit typed straight after moving the caret goes after the digits', async () => {
+      const field = page.locator('#goal');
+      await field.tap();
+      await field.pressSequentially('5000');
+      await page.keyboard.press('ArrowLeft');
+
+      await page.keyboard.press('1');
+
+      assert.equal(await field.inputValue(), '50001');
+    });
+
+    test('Backspace straight after moving the caret removes the last digit', async () => {
+      const field = page.locator('#goal');
+      await field.tap();
+      await field.pressSequentially('1234');
+      await page.keyboard.press('ArrowLeft');
+
+      await page.keyboard.press('Backspace');
+
+      assert.equal(await field.inputValue(), '123');
     });
 
     test('zeros the user has not typed are dimmed', async () => {

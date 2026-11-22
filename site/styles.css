@@ -136,6 +136,32 @@ input:focus-visible {
   color: var(--muted);
 }
 
+.clock.selected:has(:focus) .zeros + span {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+@media (forced-colors: active) {
+  .clock.selected:has(:focus) .zeros + span {
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
+  }
+}
+
+/* Hidden rather than removed, so the digits don't shift when it appears. A border, because
+   high-contrast modes drop backgrounds. */
+.caret {
+  height: 1em;
+  margin-top: 0.1em;
+  border-left: 2px solid var(--fg);
+  visibility: hidden;
+}
+
+.clock:not(.selected):has(:focus) .caret {
+  visibility: visible;
+}
+
 fieldset:has([value='pace']:checked) .hh {
   display: none;
 }

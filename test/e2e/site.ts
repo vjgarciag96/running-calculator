@@ -57,6 +57,43 @@ export async function openPage(browser: Browser, site: Site): Promise<Page> {
   return page;
 }
 
+/**
+ * Resolves once the goal box shows as highlighted, or with `false` once it shows as not, and
+ * throws if it never does. Browsers report selection changes a moment late.
+ */
+export async function boxHighlighted(page: Page, highlighted = true): Promise<void> {
+  await page.waitForFunction(
+    (highlighted) => {
+      const digits = [...document.querySelectorAll('.pair > :first-child > :last-child')];
+      return (getComputedStyle(digits.at(-1)!).backgroundColor !== 'rgba(0, 0, 0, 0)')
+        === highlighted;
+    },
+    highlighted,
+    { timeout: 2000 },
+  ).catch(() => {
+    throw new Error(highlighted ? 'goal box never highlighted' : 'goal box still highlighted');
+  });
+}
+
+/**
+ * Types into the focused field through an input method, as a Japanese keyboard does: each of
+ * `updates` replaces the text being composed, then `commit` ends the composition with that text,
+ * or cancels it when empty. Chromium only.
+ */
+export async function compose(page: Page, updates: string[], commit: string): Promise<void> {
+  const cdp = await page.context().newCDPSession(page);
+  for (const text of updates) {
+    await cdp.send('Input.imeSetComposition', {
+      text,
+      selectionStart: text.length,
+      selectionEnd: text.length,
+    });
+  }
+  await (commit
+    ? cdp.send('Input.insertText', { text: commit })
+    : cdp.send('Input.imeSetComposition', { text: '', selectionStart: 0, selectionEnd: 0 }));
+}
+
 /** The digits the goal box shows, as the user reads them: '00:45:00', or '04:30' for a pace. */
 export async function boxText(page: Page): Promise<string> {
   const pairs = await page.locator('.pair:visible > :first-child').allTextContents();
