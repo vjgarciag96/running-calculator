@@ -95,20 +95,20 @@ function readForm(): Inputs {
   const mode = modes.value as Goal['kind'];
   return {
     preset: presets.value as PresetId,
-    mode,
+    goal: mode,
     digits: keepDigits(field.value, mode),
   };
 }
 
 function fill(inputs: Inputs): void {
   presets.value = inputs.preset;
-  modes.value = inputs.mode;
+  modes.value = inputs.goal;
   field.value = inputs.digits;
 }
 
 function render(inputs: Inputs): void {
-  label.textContent = t[`${inputs.mode}Field`];
-  hint.textContent = t[`${inputs.mode}Hint`];
+  label.textContent = t[`${inputs.goal}Field`];
+  hint.textContent = t[`${inputs.goal}Hint`];
   renderBox(inputs);
 
   const goal = toGoal(inputs);

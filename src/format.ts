@@ -21,6 +21,21 @@ export function toPairs(digits: string, kind: Goal['kind']): string[] {
   return digits.slice(0, MAX_DIGITS[kind]).padStart(MAX_DIGITS[kind], '0').match(/../g)!;
 }
 
+/**
+ * Seconds → the digits a user would type, rounded to the nearest second, without leading zeros:
+ * 300 as a pace → '500', 3000 as a time → '5000'. '' when it rounds to 0 or doesn't fit the box
+ * (a pace of 100:00 or more).
+ */
+export function toDigits(seconds: number, kind: Goal['kind']): string {
+  const total = Math.round(seconds);
+  const minutes = Math.floor(total / 60);
+  const number =
+    (kind === 'time' ? Math.floor(minutes / 60) * 10000 + (minutes % 60) * 100 : minutes * 100)
+    + total % 60;
+  const digits = String(number);
+  return number > 0 && digits.length <= MAX_DIGITS[kind] ? digits : '';
+}
+
 /** Digits as hh:mm:ss → seconds (> 0): '13456' is 1:34:56. */
 export function parseDuration(digits: string): Result<Seconds, ParseError> {
   const [hours, minutes, seconds] = toPairs(digits, 'time').map(Number);

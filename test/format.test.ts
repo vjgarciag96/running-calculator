@@ -6,6 +6,7 @@ import {
   keepDigits,
   parseDuration,
   parsePace,
+  toDigits,
   toPairs,
 } from '../src/format.ts';
 import type { Meters } from '../src/pace.ts';
@@ -89,6 +90,34 @@ test('formatDuration rounds to the second', () => {
   assert.equal(formatDuration(3723), '1:02:03');
   assert.equal(formatDuration(3599.6), '1:00:00');
   assert.equal(formatDuration(26.19), '0:26');
+});
+
+test('toDigits gives a pace as the digits a user would type', () => {
+  assert.equal(toDigits(300, 'pace'), '500');
+});
+
+test('toDigits gives a finish time as the digits a user would type', () => {
+  assert.equal(toDigits(3000, 'time'), '5000');
+});
+
+test('toDigits gives hours as the leading digits of a finish time', () => {
+  assert.equal(toDigits(5696.325, 'time'), '13456');
+});
+
+test('toDigits rounds to the nearest second, carrying into the minutes', () => {
+  assert.equal(toDigits(59.6, 'pace'), '100');
+});
+
+test('toDigits gives the most a pace box holds, 99:59', () => {
+  assert.equal(toDigits(5999.4, 'pace'), '9959');
+});
+
+test('toDigits gives no digits for a pace that rounds to 100:00', () => {
+  assert.equal(toDigits(5999.6, 'pace'), '');
+});
+
+test('toDigits gives no digits for a time that rounds to 0', () => {
+  assert.equal(toDigits(0.4, 'time'), '');
 });
 
 test('formatKm gives whole km, or the exact distance for a partial km', () => {
