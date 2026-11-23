@@ -119,6 +119,14 @@ test('edit in the Calculated box with the digits it shows plus leading zeros cha
   assert.equal(inputs, before);
 });
 
+test('edit in the Calculated box with the digits it shows plus several leading zeros changes nothing', () => {
+  const before = { preset: '10k', goal: 'pace', digits: '500' } as const;
+
+  const inputs = edit(before, 'time', '005000');
+
+  assert.equal(inputs, before);
+});
+
 test('solve calculates a pace goal on the distance it is given', () => {
   const { result } = solve({ preset: 'half', goal: 'pace', digits: '430' });
 
