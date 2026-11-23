@@ -5,10 +5,10 @@ export type Result<T, E> = { ok: true; value: T } | { ok: false; error: E };
 
 export type ParseError = 'empty' | 'out-of-range';
 
-/** How many digits the goal box holds: hh mm ss for a finish time, mm ss for a pace. */
+/** How many digits a box holds: hh mm ss for a finish time, mm ss for a pace. */
 export const MAX_DIGITS: Record<Goal['kind'], number> = { time: 6, pace: 4 };
 
-/** What the goal field may hold: only digits, the first ones that fit. '4:30' → '430'. */
+/** What a box's field may hold: only digits, the first ones that fit. '4:30' → '430'. */
 export function keepDigits(text: string, kind: Goal['kind']): string {
   return text.replace(/\D/g, '').slice(0, MAX_DIGITS[kind]);
 }

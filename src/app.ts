@@ -1,4 +1,11 @@
-import { formatDuration, formatKm, keepDigits, MAX_DIGITS } from './format.ts';
+import {
+  formatDuration,
+  formatKm,
+  keepDigits,
+  MAX_DIGITS,
+  parseDuration,
+  parsePace,
+} from './format.ts';
 import { DEFAULT_INPUTS, edit, type Inputs, solve } from './inputs.ts';
 import type { Goal, PresetId, Split } from './pace.ts';
 import { type Locale, STRINGS } from './strings.ts';
@@ -18,10 +25,10 @@ interface Box {
   clock: Element;
   pairs: NodeListOf<Element>;
   tag: HTMLElement;
+  value: HTMLElement;
   wrapper: Element;
 }
 
-// Each input's id is its kind, so a box is found from the event that names it.
 const BOXES: Record<Goal['kind'], Box> = { time: box('time'), pace: box('pace') };
 
 let inputs = DEFAULT_INPUTS;
@@ -30,14 +37,14 @@ let composition: { box: Box; before: string } | undefined;
 presets.value = inputs.preset;
 render(inputs);
 
-form.addEventListener(
-  'input',
-  (event) => update(BOXES[(event.target as Element).id as Goal['kind']]),
-);
+for (const radio of presets) {
+  radio.addEventListener('input', changeDistance);
+}
 // Results are live, so Enter has nothing to submit and would only reload the page.
 form.addEventListener('submit', (event) => event.preventDefault());
 for (const box of Object.values(BOXES)) {
   const { field } = box;
+  field.addEventListener('input', () => editBox(box));
   // On click because a tap places its caret after focus, which would undo a selection made then.
   field.addEventListener('click', () => {
     field.select();
@@ -68,11 +75,12 @@ for (const box of Object.values(BOXES)) {
       field.value = composition!.before;
     }
     composition = undefined;
-    update(box);
+    editBox(box);
   });
 }
 document.addEventListener('selectionchange', syncSelection);
 
+// Each input's id is its kind, and the elements that describe it are named after it.
 function box(kind: Goal['kind']): Box {
   const field = document.getElementById(kind) as HTMLInputElement;
   const clock = field.parentElement!;
@@ -82,19 +90,27 @@ function box(kind: Goal['kind']): Box {
     clock,
     pairs: clock.querySelectorAll('.pair > :first-child'),
     tag: document.getElementById(`${kind}-tag`)!,
+    value: document.getElementById(`${kind}-value`)!,
     wrapper: clock.parentElement!,
   };
 }
 
-/** Reads a change from the distance radios, or from a box when one is given. */
-function update(source: Box | undefined): void {
-  if (!source) {
-    inputs = { ...inputs, preset: presets.value as PresetId };
-  } else if (composition?.box !== source || source.kind === inputs.goal) {
-    // A composition in the Calculated box waits for its end, since one with no digits mustn't
-    // make that box the goal on the way.
-    inputs = edit(inputs, source.kind, keepDigits(source.field.value, source.kind));
+function changeDistance(): void {
+  inputs = { ...inputs, preset: presets.value as PresetId };
+  refresh();
+}
+
+function editBox(box: Box): void {
+  // A composition in the Calculated box waits for its end, since one with no digits mustn't make
+  // that box the goal on the way.
+  const waitsForCommit = composition?.box === box && box.kind !== inputs.goal;
+  if (!waitsForCommit) {
+    inputs = edit(inputs, box.kind, keepDigits(box.field.value, box.kind));
   }
+  refresh();
+}
+
+function refresh(): void {
   render(inputs);
   syncSelection();
 }
@@ -121,14 +137,25 @@ function render(inputs: Inputs): void {
   for (const box of Object.values(BOXES)) {
     const { kind, field } = box;
     const isGoal = kind === inputs.goal;
-    // Rewriting the field ends a composition without a compositionend, so it waits for that.
-    if (composition?.box !== box) {
-      field.value = digits[kind];
+    let shown = digits[kind];
+    if (composition?.box === box) {
+      // Rewriting the field ends a composition without a compositionend, so it waits for that,
+      // and the box shows the digits being composed.
+      shown = keepDigits(field.value, kind) || shown;
+    } else {
+      field.value = shown;
     }
-    renderBox(box, digits[kind]);
+    renderBox(box, shown);
+    const seconds = (kind === 'time' ? parseDuration : parsePace)(shown);
+    box.value.textContent = seconds.ok
+      ? formatDuration(seconds.value) + (kind === 'pace' ? ` ${t.perKm}` : '')
+      : '';
     box.tag.textContent = isGoal ? t.yourGoal : t.calculated;
     box.wrapper.classList.toggle('goal', isGoal);
-    field.setAttribute('aria-describedby', `${kind}-tag help${isGoal ? ' message' : ''}`);
+    field.setAttribute(
+      'aria-describedby',
+      `${kind}-value ${kind}-tag help${isGoal ? ' message' : ''}`,
+    );
     if (isGoal) {
       field.setAttribute('aria-invalid', String(!result.ok && result.error !== 'empty'));
     } else {

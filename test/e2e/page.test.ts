@@ -4,7 +4,10 @@ import { type Browser, chromium, type Page, webkit } from 'playwright';
 import {
   boxHighlighted,
   boxText,
+  colour,
   compose,
+  description,
+  lastSplit,
   openPage,
   serveSite,
   type Site,
@@ -156,11 +159,9 @@ for (const type of [chromium, webkit]) {
 
       await field.pressSequentially('45');
 
-      const colour = (selector: string) =>
-        page.locator(selector).last().evaluate((element) => getComputedStyle(element).color);
       assert.notEqual(
-        await colour('.clock:has(#time) .zeros'),
-        await colour('.clock:has(#time) .zeros + span'),
+        await colour(page, '.clock:has(#time) .zeros'),
+        await colour(page, '.clock:has(#time) .zeros + span'),
         'untyped zeros and typed digits share a colour',
       );
     });
@@ -285,23 +286,109 @@ for (const type of [chromium, webkit]) {
     });
 
     test('the goal tag looks different from the Calculated tag', async () => {
-      const colour = (kind: string) =>
-        page.locator(`#${kind}-tag`).evaluate((element) => getComputedStyle(element).color);
-
-      const colours = { time: await colour('time'), pace: await colour('pace') };
+      const colours = {
+        time: await colour(page, '#time-tag'),
+        pace: await colour(page, '#pace-tag'),
+      };
 
       assert.notEqual(colours.time, colours.pace, 'tags share a colour');
     });
 
     test('the tag of a new goal takes the goal look', async () => {
-      const colour = (kind: string) =>
-        page.locator(`#${kind}-tag`).evaluate((element) => getComputedStyle(element).color);
-      const goalColour = await colour('time');
+      const goalColour = await colour(page, '#time-tag');
       await page.locator('#pace').tap();
 
       await page.keyboard.press('4');
 
-      assert.equal(await colour('pace'), goalColour, 'new goal tag not in the goal colour');
+      assert.equal(
+        await colour(page, '#pace-tag'),
+        goalColour,
+        'new goal tag not in the goal colour',
+      );
+    });
+
+    test(
+      'digits composed in the Calculated box show while composing',
+      { skip: noIme },
+      async () => {
+        await page.locator('#pace').tap();
+        await boxHighlighted(page, true, 'pace');
+
+        await compose(page, ['4', '45']);
+
+        assert.equal(await boxText(page, 'pace'), '00:45');
+      },
+    );
+
+    test('a word composed in the Calculated box leaves its value showing', {
+      skip: noIme,
+    }, async () => {
+      await page.locator('#pace').tap();
+      await boxHighlighted(page, true, 'pace');
+
+      await compose(page, ['k', 'か']);
+
+      assert.equal(await boxText(page, 'pace'), '05:00');
+    });
+
+    test('an empty box describes no value', async () => {
+      await page.locator('#pace').tap();
+      await boxHighlighted(page, true, 'pace');
+
+      await page.keyboard.press('Backspace');
+
+      assert.equal(
+        await description(page, 'time'),
+        'Calculated Change either one and the other follows. Your goal stays put when you switch distance.',
+      );
+    });
+
+    test('each box describes its value as a time, with its tag and the help', async () => {
+      const described = {
+        time: await description(page, 'time'),
+        pace: await description(page, 'pace'),
+      };
+
+      assert.deepEqual(described, {
+        time:
+          '50:00 Your goal Change either one and the other follows. Your goal stays put when you switch distance.',
+        pace:
+          '5:00 /km Calculated Change either one and the other follows. Your goal stays put when you switch distance.',
+      });
+    });
+
+    test('a swap and a distance switch update what each box describes', async () => {
+      await page.locator('#pace').tap();
+      await page.keyboard.type('430');
+
+      await page.getByRole('radio', { name: 'Half' }).click();
+
+      const described = {
+        time: await description(page, 'time'),
+        pace: await description(page, 'pace'),
+      };
+      assert.deepEqual(described, {
+        time:
+          '1:34:56 Calculated Change either one and the other follows. Your goal stays put when you switch distance.',
+        pace:
+          '4:30 /km Your goal Change either one and the other follows. Your goal stays put when you switch distance.',
+      });
+    });
+
+    test('the default page shows ten splits ending at 10 km in 50:00', async () => {
+      const shown = { rows: await page.locator('tbody tr').count(), last: await lastSplit(page) };
+
+      assert.deepEqual(shown, { rows: 10, last: ['10', '5:00', '50:00'] });
+    });
+
+    test('a 4:30 pace goal switched to the half shows its splits to 1:34:56', async () => {
+      await page.locator('#pace').tap();
+      await page.keyboard.type('430');
+
+      await page.getByRole('radio', { name: 'Half' }).click();
+
+      const shown = { rows: await page.locator('tbody tr').count(), last: await lastSplit(page) };
+      assert.deepEqual(shown, { rows: 22, last: ['21.0975', '0:26', '1:34:56'] });
     });
 
     test('only the goal box is described by the message', async () => {
@@ -313,7 +400,10 @@ for (const type of [chromium, webkit]) {
         time: await page.locator('#time').getAttribute('aria-describedby'),
         pace: await page.locator('#pace').getAttribute('aria-describedby'),
       };
-      assert.deepEqual(describedBy, { time: 'time-tag help', pace: 'pace-tag help message' });
+      assert.deepEqual(describedBy, {
+        time: 'time-value time-tag help',
+        pace: 'pace-value pace-tag help message',
+      });
     });
 
     test('only the goal box is marked invalid', async () => {

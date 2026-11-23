@@ -37,8 +37,9 @@
               <span class="pair"><span><span class="zeros"></span><span></span></span><small>ss</small></span>
               <span class="caret"></span>
             </div>
-            <input id="time" name="time" value="5000" inputmode="numeric" enterkeyhint="done" autocomplete="off" aria-describedby="time-tag help message">
+            <input id="time" name="time" value="5000" inputmode="numeric" enterkeyhint="done" autocomplete="off" aria-describedby="time-value time-tag help message">
           </div>
+          <span id="time-value" class="sr"></span>
         </div>
         <div class="box">
           <div class="row"><label for="pace" data-t="paceField">Pace per km</label><span id="pace-tag" class="tag" data-t="calculated">Calculated</span></div>
@@ -49,8 +50,9 @@
               <span class="caret"></span>
               <span class="unit" data-t="perKm">/km</span>
             </div>
-            <input id="pace" name="pace" value="500" inputmode="numeric" enterkeyhint="done" autocomplete="off" aria-describedby="pace-tag help">
+            <input id="pace" name="pace" value="500" inputmode="numeric" enterkeyhint="done" autocomplete="off" aria-describedby="pace-value pace-tag help">
           </div>
+          <span id="pace-value" class="sr"></span>
         </div>
         <p id="message"></p>
         <p id="help" data-t="help">Change either one and the other follows. Your goal stays put when you switch distance.</p>

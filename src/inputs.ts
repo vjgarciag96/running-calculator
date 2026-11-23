@@ -53,11 +53,13 @@ export function solve(inputs: Inputs): Solved {
 
 /**
  * Digits typed in the goal box replace the goal's digits. Digits in the other box make it the goal
- * only when they differ from what it shows, so focusing it or a rejected key changes nothing.
+ * only when they differ from what it shows, leading zeros aside, so focusing it or a rejected key
+ * changes nothing.
  */
 export function edit(inputs: Inputs, kind: Goal['kind'], digits: string): Inputs {
   if (kind === inputs.goal) {
     return { ...inputs, digits };
   }
-  return digits === solve(inputs).digits[kind] ? inputs : { ...inputs, goal: kind, digits };
+  const same = digits.replace(/^0+/, '') === solve(inputs).digits[kind];
+  return same ? inputs : { ...inputs, goal: kind, digits };
 }

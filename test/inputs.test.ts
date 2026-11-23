@@ -110,3 +110,25 @@ test('edit emptying the Calculated box makes it the goal with no digits', () => 
 
   assert.deepEqual(inputs, { preset: '10k', goal: 'pace', digits: '' });
 });
+
+test('edit in the Calculated box with the digits it shows plus leading zeros changes nothing', () => {
+  const before = { preset: '10k', goal: 'time', digits: '5000' } as const;
+
+  const inputs = edit(before, 'pace', '0500');
+
+  assert.equal(inputs, before);
+});
+
+test('solve calculates a pace goal on the distance it is given', () => {
+  const { result } = solve({ preset: 'half', goal: 'pace', digits: '430' });
+
+  assert.ok(result.ok, 'no calculation');
+  assert.deepEqual([result.value.meters, result.value.secondsPerKm], [21097.5, 270]);
+});
+
+test('solve calculates a finish time goal on the distance it is given', () => {
+  const { result } = solve({ preset: 'marathon', goal: 'time', digits: '30000' });
+
+  assert.ok(result.ok, 'no calculation');
+  assert.deepEqual([result.value.meters, result.value.finishSeconds], [42195, 10800]);
+});

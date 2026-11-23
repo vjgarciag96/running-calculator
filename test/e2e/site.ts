@@ -65,8 +65,8 @@ export async function openPage(browser: Browser, site: Site, locale: Locale = 'e
  */
 export async function boxHighlighted(
   page: Page,
-  highlighted = true,
-  kind: Goal['kind'] = 'time',
+  highlighted: boolean,
+  kind: Goal['kind'],
 ): Promise<void> {
   await page.waitForFunction(
     ([highlighted, kind]) => {
@@ -86,9 +86,9 @@ export async function boxHighlighted(
 /**
  * Types into the focused field through an input method, as a Japanese keyboard does: each of
  * `updates` replaces the text being composed, then `commit` ends the composition with that text,
- * or cancels it when empty. Chromium only.
+ * or cancels it when empty. Without `commit` the composition stays open. Chromium only.
  */
-export async function compose(page: Page, updates: string[], commit: string): Promise<void> {
+export async function compose(page: Page, updates: string[], commit?: string): Promise<void> {
   const cdp = await page.context().newCDPSession(page);
   for (const text of updates) {
     await cdp.send('Input.imeSetComposition', {
@@ -96,6 +96,9 @@ export async function compose(page: Page, updates: string[], commit: string): Pr
       selectionStart: text.length,
       selectionEnd: text.length,
     });
+  }
+  if (commit === undefined) {
+    return;
   }
   await (commit
     ? cdp.send('Input.insertText', { text: commit })
@@ -111,4 +114,24 @@ export async function boxText(page: Page, kind: Goal['kind'] = 'time'): Promise<
 /** The tag over a box: "Your goal" or "Calculated". */
 export async function tagText(page: Page, kind: Goal['kind']): Promise<string | null> {
   return page.locator(`#${kind}-tag`).textContent();
+}
+
+/** The computed text colour of the last element matching `selector`. */
+export async function colour(page: Page, selector: string): Promise<string> {
+  return page.locator(selector).last().evaluate((element) => getComputedStyle(element).color);
+}
+
+/** What a screen reader reads as the box's description: each described element's text in order. */
+export async function description(page: Page, kind: Goal['kind']): Promise<string> {
+  return page.locator(`#${kind}`).evaluate((field) =>
+    field.getAttribute('aria-describedby')!.split(' ')
+      .map((id) => document.getElementById(id)!.textContent)
+      .filter(Boolean)
+      .join(' ')
+  );
+}
+
+/** The cells of the splits table's last row. */
+export async function lastSplit(page: Page): Promise<string[]> {
+  return page.locator('tbody tr').last().locator('td').allTextContents();
 }

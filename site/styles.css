@@ -91,6 +91,16 @@ label[for] {
   }
 }
 
+/* Read by screen readers only: the box's value as a time, since its field holds bare digits. */
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 .box + .box {
   margin-top: 1rem;
 }
@@ -219,7 +229,6 @@ input:focus-visible {
   color: var(--accent);
 }
 
-dt,
 th {
   color: var(--muted);
   font-size: 0.875rem;
@@ -227,9 +236,6 @@ th {
 
 table {
   font-variant-numeric: tabular-nums;
-}
-
-table {
   width: 100%;
   border-collapse: collapse;
 }
