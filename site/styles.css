@@ -345,3 +345,28 @@ tr:nth-child(5n) td {
     font-size: 2.25rem;
   }
 }
+
+/* Wide screens put the splits beside the goal, so a whole marathon's splits are in view while you
+   change it. */
+@media (min-width: 64rem) {
+  main {
+    display: grid;
+    grid-template-columns: 32rem minmax(0, 1fr);
+    align-items: start;
+    column-gap: 4rem;
+    max-width: 72rem;
+  }
+
+  table {
+    margin-top: 0;
+  }
+}
+
+/* Only when the goal and the records fit the window (they take about 44rem), or their bottom would
+   stay hidden until the end of the splits. */
+@media (min-width: 64rem) and (min-height: 47rem) {
+  .controls {
+    position: sticky;
+    top: 2rem;
+  }
+}
