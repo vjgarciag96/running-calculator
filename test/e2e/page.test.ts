@@ -9,6 +9,7 @@ import {
   description,
   lastSplit,
   openPage,
+  records,
   serveSite,
   type Site,
   tagText,
@@ -41,6 +42,62 @@ const BOXES = [
     pastedAtCaret: '5004',
     plusOne: '5001',
     tabFrom: '#time',
+  },
+] as const;
+
+// The records block for each distance, as it reads on each language's page.
+const RECORDS = [
+  {
+    preset: '5k',
+    en: [
+      ['World records'],
+      ['Men', '12:49', '2:34 /km', 'Berihu Aregawi, 2021'],
+      ['Women', '13:54', '2:47 /km', 'Beatrice Chebet, 2024'],
+    ],
+    es: [
+      ['Récords mundiales'],
+      ['Hombres', '12:49', '2:34 /km', 'Berihu Aregawi, 2021'],
+      ['Mujeres', '13:54', '2:47 /km', 'Beatrice Chebet, 2024'],
+    ],
+  },
+  {
+    preset: '10k',
+    en: [
+      ['World records'],
+      ['Men', '26:31', '2:39 /km', 'Yomif Kejelcha, 2025'],
+      ['Women', '28:46', '2:53 /km', 'Agnes Ngetich, 2024'],
+    ],
+    es: [
+      ['Récords mundiales'],
+      ['Hombres', '26:31', '2:39 /km', 'Yomif Kejelcha, 2025'],
+      ['Mujeres', '28:46', '2:53 /km', 'Agnes Ngetich, 2024'],
+    ],
+  },
+  {
+    preset: 'half',
+    en: [
+      ['World records'],
+      ['Men', '57:20', '2:43 /km', 'Jacob Kiplimo, 2026'],
+      ['Women', '1:02:52', '2:59 /km', 'Letesenbet Gidey, 2021'],
+    ],
+    es: [
+      ['Récords mundiales'],
+      ['Hombres', '57:20', '2:43 /km', 'Jacob Kiplimo, 2026'],
+      ['Mujeres', '1:02:52', '2:59 /km', 'Letesenbet Gidey, 2021'],
+    ],
+  },
+  {
+    preset: 'marathon',
+    en: [
+      ['World records'],
+      ['Men', '1:59:30', '2:50 /km', 'Sabastian Sawe, 2026'],
+      ['Women', '2:09:56', '3:05 /km', 'Ruth Chepngetich, 2024'],
+    ],
+    es: [
+      ['Récords mundiales'],
+      ['Hombres', '1:59:30', '2:50 /km', 'Sabastian Sawe, 2026'],
+      ['Mujeres', '2:09:56', '3:05 /km', 'Ruth Chepngetich, 2024'],
+    ],
   },
 ] as const;
 
@@ -427,6 +484,54 @@ for (const type of [chromium, webkit]) {
       const tags = { time: await tagText(es, 'time'), pace: await tagText(es, 'pace') };
       await es.context().close();
       assert.deepEqual(tags, { time: 'Calculado', pace: 'Tu objetivo' });
+    });
+
+    test('the world records sit between the boxes and the splits', async () => {
+      const top = (selector: string) =>
+        page.locator(selector).evaluate((element) => element.getBoundingClientRect().top);
+
+      const order = {
+        boxes: await top('.boxes'),
+        records: await top('section'),
+        splits: await top('table'),
+      };
+
+      assert.ok(
+        order.boxes < order.records && order.records < order.splits,
+        `top of boxes, records and splits: ${JSON.stringify(order)}`,
+      );
+    });
+
+    for (const { preset, en, es } of RECORDS) {
+      test(`the ${preset} shows its men's and women's world records`, async () => {
+        await page.locator(`[value="${preset}"]`).click();
+
+        assert.deepEqual(await records(page), en);
+      });
+
+      test(`the Spanish page shows the ${preset} world records in Spanish`, async () => {
+        const spanish = await openPage(browser!, site, 'es');
+
+        await spanish.locator(`[value="${preset}"]`).click();
+
+        const shown = await records(spanish);
+        await spanish.context().close();
+        assert.deepEqual(shown, es);
+      });
+    }
+
+    test('the world records stay when the goal is emptied', async () => {
+      await page.locator('#time').fill('');
+
+      assert.deepEqual(await records(page), RECORDS[1].en);
+    });
+
+    test('the world records stay when the goal is out of range', async () => {
+      await page.locator('#pace').tap();
+
+      await page.keyboard.type('060');
+
+      assert.deepEqual(await records(page), RECORDS[1].en);
     });
 
     for (const box of BOXES) {

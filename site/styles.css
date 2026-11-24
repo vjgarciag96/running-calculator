@@ -48,6 +48,7 @@ fieldset,
 }
 
 legend,
+h2,
 caption {
   padding: 0;
   margin: 0 0 0.5rem;
@@ -251,8 +252,49 @@ input:focus-visible {
   color: var(--accent);
 }
 
+section,
 table {
   margin-top: 2.5rem;
+}
+
+dl {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin: 0;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--line);
+}
+
+dl div + div {
+  padding-left: 1.25rem;
+  border-left: 1px solid var(--line);
+}
+
+dt,
+dd + dd {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.time {
+  font-size: 1.75rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+/* The pace, the number a runner compares with their own. */
+.time + dd {
+  color: var(--fg);
+  font-size: 1rem;
+}
+
+table {
   font-variant-numeric: tabular-nums;
   width: 100%;
   border-collapse: collapse;

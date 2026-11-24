@@ -1,6 +1,13 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { calculate, DISTANCES, type Goal, type Seconds, type SecondsPerKm } from '../src/pace.ts';
+import {
+  calculate,
+  DISTANCES,
+  type Goal,
+  paceFor,
+  type Seconds,
+  type SecondsPerKm,
+} from '../src/pace.ts';
 
 test('10 km in 50:00 holds 5:00/km with ten 5:00 splits', () => {
   const c = calculate(DISTANCES['10k'].meters, { kind: 'time', seconds: 3000 as Seconds });
@@ -74,4 +81,12 @@ test('every split matches the pace and the last one ends exactly at the finish',
       assert.equal(c.splits.at(-1)!.cumulativeSeconds, c.finishSeconds, label);
     }
   }
+});
+
+test('paceFor gives a 26:31 10K the same pace as a 26:31 time goal', () => {
+  const meters = DISTANCES['10k'].meters;
+
+  const pace = paceFor(1591 as Seconds, meters);
+
+  assert.equal(pace, calculate(meters, { kind: 'time', seconds: 1591 as Seconds }).secondsPerKm);
 });

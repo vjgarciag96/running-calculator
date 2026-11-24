@@ -135,3 +135,13 @@ export async function description(page: Page, kind: Goal['kind']): Promise<strin
 export async function lastSplit(page: Page): Promise<string[]> {
   return page.locator('tbody tr').last().locator('td').allTextContents();
 }
+
+/** The world records block as read: its heading, then each entry's label and values in order. */
+export async function records(page: Page): Promise<string[][]> {
+  const section = page.locator('section');
+  return [
+    [(await section.locator('h2').textContent())!],
+    await section.locator('.men > *').allTextContents(),
+    await section.locator('.women > *').allTextContents(),
+  ];
+}
