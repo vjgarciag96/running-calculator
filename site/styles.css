@@ -106,7 +106,9 @@ label[for] {
 
 /* High-contrast modes repaint borders, so mark the choice with the system's selection colour. */
 @media (forced-colors: active) {
-  .picker label {
+  .picker label,
+  .picker label:hover,
+  .picker label:has(:checked) {
     forced-color-adjust: none;
     border-color: Canvas;
     color: CanvasText;
