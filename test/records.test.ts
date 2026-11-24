@@ -2,11 +2,11 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { formatDuration } from '../src/format.ts';
 import { DISTANCES, paceFor, type PresetId } from '../src/pace.ts';
-import { RECORDS } from '../src/records.ts';
+import { type Category, RECORDS } from '../src/records.ts';
 
 // Each record as the page shows it: time, athlete and year, and the pace /km.
 function shown(preset: PresetId) {
-  const entry = (category: 'men' | 'women') => {
+  const entry = (category: Category) => {
     const { seconds, athlete, year } = RECORDS[preset][category];
     const pace = formatDuration(paceFor(seconds, DISTANCES[preset].meters));
     return { time: formatDuration(seconds), athlete, year, pace };

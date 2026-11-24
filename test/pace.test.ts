@@ -83,10 +83,8 @@ test('every split matches the pace and the last one ends exactly at the finish',
   }
 });
 
-test('paceFor gives a 26:31 10K the same pace as a 26:31 time goal', () => {
-  const meters = DISTANCES['10k'].meters;
+test('a 26:31 10K is run at 159.1 s/km', () => {
+  const pace = paceFor(1591 as Seconds, DISTANCES['10k'].meters);
 
-  const pace = paceFor(1591 as Seconds, meters);
-
-  assert.equal(pace, calculate(meters, { kind: 'time', seconds: 1591 as Seconds }).secondsPerKm);
+  assert.ok(Math.abs(pace - 159.1) < 1e-9, `${pace} s/km`);
 });
