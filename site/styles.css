@@ -362,8 +362,9 @@ tr:nth-child(5n) td {
   }
 }
 
-/* Only when the goal and the records fit the window, or the bottom of them couldn't be reached. */
-@media (min-width: 64rem) and (min-height: 46rem) {
+/* Only when the goal and the records fit the window (they take about 44rem), or their bottom would
+   stay hidden until the end of the splits. */
+@media (min-width: 64rem) and (min-height: 47rem) {
   .controls {
     position: sticky;
     top: 2rem;

@@ -45,6 +45,9 @@ const BOXES = [
   },
 ] as const;
 
+// A laptop's window, wide enough for the splits beside the goal and tall enough to keep it in view.
+const DESKTOP = { width: 1440, height: 900 };
+
 // The records block for each distance, as it reads on the English page.
 const RECORDS = [
   {
@@ -477,7 +480,7 @@ for (const type of [chromium, webkit]) {
     });
 
     test('a wide screen shows the splits beside the goal', async () => {
-      await page.setViewportSize({ width: 1440, height: 900 });
+      await page.setViewportSize(DESKTOP);
 
       const goal = await page.locator('.controls').boundingBox();
       const splits = await page.locator('table').boundingBox();
@@ -489,14 +492,26 @@ for (const type of [chromium, webkit]) {
     });
 
     test("the goal stays in view at the end of a marathon's splits on a wide screen", async () => {
-      await page.setViewportSize({ width: 1440, height: 900 });
+      await page.setViewportSize(DESKTOP);
       await page.locator('[value="marathon"]').click();
 
       await page.locator('tbody tr').last().scrollIntoViewIfNeeded();
 
-      assert.ok(await page.locator('#time').isVisible());
-      const box = await page.locator('.controls').boundingBox();
-      assert.ok(box!.y >= 0 && box!.y + box!.height <= 900, `goal at ${box!.y}+${box!.height}`);
+      const goal = await page.locator('.controls').boundingBox();
+      assert.ok(
+        goal!.y >= 0 && goal!.y + goal!.height <= DESKTOP.height,
+        `goal at ${goal!.y}+${goal!.height}`,
+      );
+    });
+
+    test('on a wide but short window the goal scrolls away instead of being cut off', async () => {
+      await page.setViewportSize({ width: DESKTOP.width, height: 700 });
+      await page.locator('[value="marathon"]').click();
+
+      await page.locator('tbody tr').nth(20).scrollIntoViewIfNeeded();
+
+      const goal = await page.locator('.controls').boundingBox();
+      assert.ok(goal!.y < 0, `goal at ${goal!.y}`);
     });
 
     test('the world records sit between the boxes and the splits', async () => {
