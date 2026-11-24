@@ -3,6 +3,7 @@
     "target": "es2022",
     "module": "esnext",
     "strict": true,
+    "removeComments": true,
     "erasableSyntaxOnly": true,
     "rewriteRelativeImportExtensions": true,
     "rootDir": "src",

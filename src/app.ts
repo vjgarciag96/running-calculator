@@ -7,7 +7,8 @@ import {
   parsePace,
 } from './format.ts';
 import { DEFAULT_INPUTS, edit, type Inputs, solve } from './inputs.ts';
-import type { Goal, PresetId, Split } from './pace.ts';
+import { DISTANCES, type Goal, paceFor, type PresetId, type Split } from './pace.ts';
+import { type Category, RECORDS } from './records.ts';
 import { type Locale, STRINGS } from './strings.ts';
 
 // The build writes one page per language, with its text already in place.
@@ -95,6 +96,17 @@ function box(kind: Goal['kind']): Box {
   };
 }
 
+// The record holders for the distance, with the pace that took them there.
+function renderRecords(preset: PresetId): void {
+  for (const category of ['men', 'women'] as const satisfies Category[]) {
+    const { seconds, athlete, year } = RECORDS[preset][category];
+    const [time, pace, who] = document.querySelectorAll(`.${category} dd`);
+    time.textContent = formatDuration(seconds);
+    pace.textContent = `${formatDuration(paceFor(seconds, DISTANCES[preset].meters))} ${t.perKm}`;
+    who.textContent = `${athlete}, ${year}`;
+  }
+}
+
 function changeDistance(): void {
   inputs = { ...inputs, preset: presets.value as PresetId };
   refresh();
@@ -134,6 +146,7 @@ function syncSelection(): void {
 
 function render(inputs: Inputs): void {
   const { digits, result } = solve(inputs);
+  renderRecords(inputs.preset);
   for (const box of Object.values(BOXES)) {
     const { kind, field } = box;
     const isGoal = kind === inputs.goal;

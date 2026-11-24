@@ -25,7 +25,7 @@ test('page has no mode toggle, Goal legend or results block', () => {
 
   assert.doesNotMatch(html, /name="mode"/, 'mode toggle');
   assert.doesNotMatch(html, /<legend>Objetivo<\/legend>/, 'Goal legend');
-  assert.doesNotMatch(html, /<dl|<output/, 'results block');
+  assert.doesNotMatch(html, /<output/, 'results block');
 });
 
 test('the Spanish page labels and tags both boxes, with the help line', () => {

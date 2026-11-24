@@ -12,15 +12,17 @@
   <link rel="modulepreload" href="../format.js">
   <link rel="modulepreload" href="../inputs.js">
   <link rel="modulepreload" href="../pace.js">
+  <link rel="modulepreload" href="../records.js">
   <link rel="modulepreload" href="../strings.js">
 </head>
 <body>
   <main>
     <h1 data-t="title">Running calculator</h1>
+    <p class="lede" data-t="description"></p>
     <form>
       <fieldset>
         <legend data-t="distance">Distance</legend>
-        <div class="chips">
+        <div class="picker">
           <label><input type="radio" name="preset" value="5k"><span data-t="5k">5K</span></label>
           <label><input type="radio" name="preset" value="10k" checked><span data-t="10k">10K</span></label>
           <label><input type="radio" name="preset" value="half"><span data-t="half">Half</span></label>
@@ -58,6 +60,13 @@
         <p id="help" data-t="help">Change either one and the other follows. Your goal stays put when you switch distance.</p>
       </div>
     </form>
+    <section aria-labelledby="records">
+      <h2 id="records" data-t="records">World records</h2>
+      <dl>
+        <div class="men"><dt data-t="men">Men</dt><dd class="time"></dd><dd></dd><dd></dd></div>
+        <div class="women"><dt data-t="women">Women</dt><dd class="time"></dd><dd></dd><dd></dd></div>
+      </dl>
+    </section>
     <table>
       <caption data-t="splits">Splits</caption>
       <thead><tr><th scope="col" data-t="km">km</th><th scope="col" data-t="split">Split</th><th scope="col" data-t="total">Total</th></tr></thead>
