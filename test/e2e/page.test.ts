@@ -476,6 +476,29 @@ for (const type of [chromium, webkit]) {
       assert.deepEqual(tags, { time: 'Calculado', pace: 'Tu objetivo' });
     });
 
+    test('a wide screen shows the splits beside the goal', async () => {
+      await page.setViewportSize({ width: 1440, height: 900 });
+
+      const goal = await page.locator('.controls').boundingBox();
+      const splits = await page.locator('table').boundingBox();
+
+      assert.ok(
+        splits!.x >= goal!.x + goal!.width,
+        `goal ${goal!.x}+${goal!.width}, splits ${splits!.x}`,
+      );
+    });
+
+    test("the goal stays in view at the end of a marathon's splits on a wide screen", async () => {
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await page.locator('[value="marathon"]').click();
+
+      await page.locator('tbody tr').last().scrollIntoViewIfNeeded();
+
+      assert.ok(await page.locator('#time').isVisible());
+      const box = await page.locator('.controls').boundingBox();
+      assert.ok(box!.y >= 0 && box!.y + box!.height <= 900, `goal at ${box!.y}+${box!.height}`);
+    });
+
     test('the world records sit between the boxes and the splits', async () => {
       const top = (selector: string) =>
         page.locator(selector).evaluate((element) => element.getBoundingClientRect().top);
