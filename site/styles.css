@@ -7,7 +7,7 @@
   --muted: light-dark(#5f5f5b, #a3a39e);
   --soft: light-dark(#f1f1ee, #222220);
   /* Input boxes only: --line is too faint to show where to tap. */
-  --edge: light-dark(#8f8b84, #6f6c66);
+  --edge: light-dark(#8c8881, #6f6c66);
   --accent: light-dark(#c2410c, #ff8a50);
   --on-accent: light-dark(#fff, #0f0f0e);
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -116,7 +116,7 @@ fieldset {
 
 .picker label:has(:checked) {
   background: var(--surface);
-  box-shadow: 0 1px 2px #00000014, 0 0 0 1px var(--edge);
+  box-shadow: 0 0 0 1px var(--edge), 0 1px 2px #00000014;
 }
 
 .picker input {
@@ -326,7 +326,7 @@ dd:last-child {
 }
 
 /* At 320 px three columns don't fit, nor do the Spanish distances on one line. */
-@media (width < 375px) {
+@media (width < 380px) {
   dl div {
     grid-template-columns: 56px 1fr;
   }
