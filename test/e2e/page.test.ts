@@ -45,8 +45,8 @@ const BOXES = [
   },
 ] as const;
 
-// A laptop's window, wide enough for the splits beside the goal and tall enough to keep it in view.
-const DESKTOP = { width: 1440, height: 900 };
+// A laptop's window, wide enough for the splits beside the goal.
+const DESKTOP = { width: 1280, height: 900 };
 
 // The records block for each distance, as it reads on the English page.
 const RECORDS = [
@@ -387,24 +387,16 @@ for (const type of [chromium, webkit]) {
 
       await page.keyboard.press('Backspace');
 
-      assert.equal(
-        await description(page, 'time'),
-        'Calculated Change either one and the other follows. Your goal stays put when you switch distance.',
-      );
+      assert.equal(await description(page, 'time'), 'Calculated');
     });
 
-    test('each box describes its value as a time, with its tag and the help', async () => {
+    test('each box describes its value as a time, with its tag', async () => {
       const described = {
         time: await description(page, 'time'),
         pace: await description(page, 'pace'),
       };
 
-      assert.deepEqual(described, {
-        time:
-          '50:00 Your goal Change either one and the other follows. Your goal stays put when you switch distance.',
-        pace:
-          '5:00 /km Calculated Change either one and the other follows. Your goal stays put when you switch distance.',
-      });
+      assert.deepEqual(described, { time: '50:00 Your goal', pace: '5:00 /km Calculated' });
     });
 
     test('a swap and a distance switch update what each box describes', async () => {
@@ -417,12 +409,7 @@ for (const type of [chromium, webkit]) {
         time: await description(page, 'time'),
         pace: await description(page, 'pace'),
       };
-      assert.deepEqual(described, {
-        time:
-          '1:34:56 Calculated Change either one and the other follows. Your goal stays put when you switch distance.',
-        pace:
-          '4:30 /km Your goal Change either one and the other follows. Your goal stays put when you switch distance.',
-      });
+      assert.deepEqual(described, { time: '1:34:56 Calculated', pace: '4:30 /km Your goal' });
     });
 
     test('the default page shows ten splits ending at 10 km in 50:00', async () => {
@@ -451,8 +438,8 @@ for (const type of [chromium, webkit]) {
         pace: await page.locator('#pace').getAttribute('aria-describedby'),
       };
       assert.deepEqual(describedBy, {
-        time: 'time-value time-tag help',
-        pace: 'pace-value pace-tag help message',
+        time: 'time-value time-tag',
+        pace: 'pace-value pace-tag message',
       });
     });
 
@@ -482,36 +469,13 @@ for (const type of [chromium, webkit]) {
     test('a wide screen shows the splits beside the goal', async () => {
       await page.setViewportSize(DESKTOP);
 
-      const goal = await page.locator('.controls').boundingBox();
-      const splits = await page.locator('table').boundingBox();
+      const goal = await page.locator('.col').boundingBox();
+      const splits = await page.locator('.splits').boundingBox();
 
       assert.ok(
         splits!.x >= goal!.x + goal!.width,
         `goal ${goal!.x}+${goal!.width}, splits ${splits!.x}`,
       );
-    });
-
-    test("the goal stays in view at the end of a marathon's splits on a wide screen", async () => {
-      await page.setViewportSize(DESKTOP);
-      await page.locator('[value="marathon"]').click();
-
-      await page.locator('tbody tr').last().scrollIntoViewIfNeeded();
-
-      const goal = await page.locator('.controls').boundingBox();
-      assert.ok(
-        goal!.y >= 0 && goal!.y + goal!.height <= DESKTOP.height,
-        `goal at ${goal!.y}+${goal!.height}`,
-      );
-    });
-
-    test('on a wide but short window the goal scrolls away instead of being cut off', async () => {
-      await page.setViewportSize({ width: DESKTOP.width, height: 700 });
-      await page.locator('[value="marathon"]').click();
-
-      await page.locator('tbody tr').nth(20).scrollIntoViewIfNeeded();
-
-      const goal = await page.locator('.controls').boundingBox();
-      assert.ok(goal!.y < 0, `goal at ${goal!.y}`);
     });
 
     test('the world records sit between the boxes and the splits', async () => {
@@ -520,8 +484,8 @@ for (const type of [chromium, webkit]) {
 
       const order = {
         boxes: await top('.boxes'),
-        records: await top('section'),
-        splits: await top('table'),
+        records: await top('section[aria-labelledby=records]'),
+        splits: await top('.splits'),
       };
 
       assert.ok(

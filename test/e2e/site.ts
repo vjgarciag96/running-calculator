@@ -138,7 +138,7 @@ export async function lastSplit(page: Page): Promise<string[]> {
 
 /** The world records block as read: its heading, then each entry's label and values in order. */
 export async function records(page: Page): Promise<string[][]> {
-  const section = page.locator('section');
+  const section = page.locator('section[aria-labelledby=records]');
   return [
     [(await section.locator('h2').textContent())!],
     await section.locator('.men > *').allTextContents(),

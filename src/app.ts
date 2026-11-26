@@ -102,7 +102,9 @@ function renderRecords(preset: PresetId): void {
     const { seconds, athlete, year } = RECORDS[preset][category];
     const [time, pace, who] = document.querySelectorAll(`.${category} dd`);
     time.textContent = formatDuration(seconds);
-    pace.textContent = `${formatDuration(paceFor(seconds, DISTANCES[preset].meters))} ${t.perKm}`;
+    pace.firstElementChild!.textContent = formatDuration(
+      paceFor(seconds, DISTANCES[preset].meters),
+    );
     who.textContent = `${athlete}, ${year}`;
   }
 }
@@ -167,7 +169,7 @@ function render(inputs: Inputs): void {
     box.wrapper.classList.toggle('goal', isGoal);
     field.setAttribute(
       'aria-describedby',
-      `${kind}-value ${kind}-tag help${isGoal ? ' message' : ''}`,
+      `${kind}-value ${kind}-tag${isGoal ? ' message' : ''}`,
     );
     if (isGoal) {
       field.setAttribute('aria-invalid', String(!result.ok && result.error !== 'empty'));

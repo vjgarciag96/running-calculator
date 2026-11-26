@@ -16,64 +16,72 @@
   <link rel="modulepreload" href="../strings.js">
 </head>
 <body>
+  <header>
+    <a class="brand" href="./"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M10 2h4"/></svg>Running tools</a>
+  </header>
   <main>
-    <div class="controls">
-      <h1 data-t="title">Running calculator</h1>
-      <p class="lede" data-t="description"></p>
-      <form>
-        <fieldset>
-          <legend data-t="distance">Distance</legend>
-          <div class="picker">
-            <label><input type="radio" name="preset" value="5k"><span data-t="5k">5K</span></label>
-            <label><input type="radio" name="preset" value="10k" checked><span data-t="10k">10K</span></label>
-            <label><input type="radio" name="preset" value="half"><span data-t="half">Half</span></label>
-            <label><input type="radio" name="preset" value="marathon"><span data-t="marathon">Marathon</span></label>
-          </div>
-        </fieldset>
-        <div class="boxes">
-          <div class="box goal">
-            <div class="row"><label for="time" data-t="timeField">Finish time</label><span id="time-tag" class="tag" data-t="yourGoal">Your goal</span></div>
-            <div class="clock">
-              <div class="pairs" aria-hidden="true">
-                <span class="pair"><span><span class="zeros"></span><span></span></span><small>hh</small></span><span class="colon">:</span>
-                <span class="pair"><span><span class="zeros"></span><span></span></span><small>mm</small></span><span class="colon">:</span>
-                <span class="pair"><span><span class="zeros"></span><span></span></span><small>ss</small></span>
-                <span class="caret"></span>
-              </div>
-              <input id="time" name="time" value="5000" inputmode="numeric" enterkeyhint="done" autocomplete="off" aria-describedby="time-value time-tag help message">
+    <h1 class="sr" data-t="heading">Running calculator: pace, finish time and 1 km splits</h1>
+    <div class="col">
+      <section class="card" aria-labelledby="calculator">
+        <h2 id="calculator" class="sr" data-t="calculator">Calculator</h2>
+        <form>
+          <fieldset>
+            <legend data-t="distance">Distance</legend>
+            <div class="picker">
+              <label><input type="radio" name="preset" value="5k"><span data-t="5k">5K</span></label>
+              <label><input type="radio" name="preset" value="10k" checked><span data-t="10k">10K</span></label>
+              <label><input type="radio" name="preset" value="half"><span data-t="half">Half</span></label>
+              <label><input type="radio" name="preset" value="marathon"><span data-t="marathon">Marathon</span></label>
             </div>
-            <span id="time-value" class="sr"></span>
-          </div>
-          <div class="box">
-            <div class="row"><label for="pace" data-t="paceField">Pace per km</label><span id="pace-tag" class="tag" data-t="calculated">Calculated</span></div>
-            <div class="clock">
-              <div class="pairs" aria-hidden="true">
-                <span class="pair"><span><span class="zeros"></span><span></span></span><small>mm</small></span><span class="colon">:</span>
-                <span class="pair"><span><span class="zeros"></span><span></span></span><small>ss</small></span>
-                <span class="caret"></span>
-                <span class="unit" data-t="perKm">/km</span>
+          </fieldset>
+          <div class="boxes">
+            <div class="box goal">
+              <div class="row"><label for="time" data-t="timeField">Finish time</label><span id="time-tag" class="tag" data-t="yourGoal">Your goal</span></div>
+              <div class="clock">
+                <div class="pairs" aria-hidden="true">
+                  <span class="pair"><span><span class="zeros"></span><span></span></span><small>hh</small></span><span class="colon">:</span>
+                  <span class="pair"><span><span class="zeros"></span><span></span></span><small>mm</small></span><span class="colon">:</span>
+                  <span class="pair"><span><span class="zeros"></span><span></span></span><small>ss</small></span>
+                  <span class="caret"></span>
+                </div>
+                <input id="time" name="time" value="5000" inputmode="numeric" enterkeyhint="done" autocomplete="off" aria-describedby="time-value time-tag message">
               </div>
-              <input id="pace" name="pace" value="500" inputmode="numeric" enterkeyhint="done" autocomplete="off" aria-describedby="pace-value pace-tag help">
+              <span id="time-value" class="sr"></span>
             </div>
-            <span id="pace-value" class="sr"></span>
+            <div class="box">
+              <div class="row"><label for="pace" data-t="paceField">Pace per km</label><span id="pace-tag" class="tag" data-t="calculated">Calculated</span></div>
+              <div class="clock">
+                <div class="pairs" aria-hidden="true">
+                  <span class="pair"><span><span class="zeros"></span><span></span></span><small>mm</small></span><span class="colon">:</span>
+                  <span class="pair"><span><span class="zeros"></span><span></span></span><small>ss</small></span>
+                  <span class="caret"></span>
+                  <span class="unit" data-t="perKm">/km</span>
+                </div>
+                <input id="pace" name="pace" value="500" inputmode="numeric" enterkeyhint="done" autocomplete="off" aria-describedby="pace-value pace-tag">
+              </div>
+              <span id="pace-value" class="sr"></span>
+            </div>
+            <p id="message"></p>
           </div>
-          <p id="message"></p>
-          <p id="help" data-t="help">Change either one and the other follows. Your goal stays put when you switch distance.</p>
-        </div>
-      </form>
-      <section aria-labelledby="records">
+        </form>
+      </section>
+      <section class="card" aria-labelledby="records">
         <h2 id="records" data-t="records">World records</h2>
         <dl>
-          <div class="men"><dt data-t="men">Men</dt><dd class="time"></dd><dd></dd><dd></dd></div>
-          <div class="women"><dt data-t="women">Women</dt><dd class="time"></dd><dd></dd><dd></dd></div>
+          <div class="men"><dt data-t="men">Men</dt><dd class="time"></dd><dd><span></span> <small data-t="perKm">/km</small></dd><dd></dd></div>
+          <div class="women"><dt data-t="women">Women</dt><dd class="time"></dd><dd><span></span> <small data-t="perKm">/km</small></dd><dd></dd></div>
         </dl>
       </section>
     </div>
-    <table>
-      <caption data-t="splits">Splits</caption>
-      <thead><tr><th scope="col" data-t="km">km</th><th scope="col" data-t="split">Split</th><th scope="col" data-t="total">Total</th></tr></thead>
-      <tbody></tbody>
-    </table>
+    <section class="card splits">
+      <div class="head"><h2 id="splits" data-t="splits">Splits</h2><span data-t="evenPace">Even pace</span></div>
+      <div class="scroll" role="region" aria-labelledby="splits" tabindex="0">
+        <table aria-labelledby="splits">
+          <thead><tr><th scope="col" data-t="km">km</th><th scope="col" data-t="split">Split</th><th scope="col" data-t="total">Total</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
   </main>
 </body>
 </html>

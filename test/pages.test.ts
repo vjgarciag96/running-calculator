@@ -28,7 +28,7 @@ test('page has no mode toggle, Goal legend or results block', () => {
   assert.doesNotMatch(html, /<output/, 'results block');
 });
 
-test('the Spanish page labels and tags both boxes, with the help line', () => {
+test('the Spanish page labels and tags both boxes', () => {
   const html = page(template, 'es');
 
   assert.match(
@@ -39,13 +39,9 @@ test('the Spanish page labels and tags both boxes, with the help line', () => {
     html,
     /<label for="pace">Ritmo por km<\/label><span id="pace-tag" class="tag">Calculado<\/span>/,
   );
-  assert.match(
-    html,
-    /<p id="help">Cambia cualquiera de los dos y el otro se ajusta\. Tu objetivo se mantiene al cambiar de distancia\.<\/p>/,
-  );
 });
 
-test('the English page labels and tags both boxes, with the help line', () => {
+test('the English page labels and tags both boxes', () => {
   const html = page(template, 'en');
 
   assert.match(
@@ -56,10 +52,27 @@ test('the English page labels and tags both boxes, with the help line', () => {
     html,
     /<label for="pace">Pace per km<\/label><span id="pace-tag" class="tag">Calculated<\/span>/,
   );
+});
+
+test('the English page has a hidden heading that names the calculator', () => {
+  const html = page(template, 'en');
+
   assert.match(
     html,
-    /<p id="help">Change either one and the other follows\. Your goal stays put when you switch distance\.<\/p>/,
+    /<h1 class="sr">Running calculator: pace, finish time and 1 km splits<\/h1>/,
   );
+});
+
+test('the Spanish page has a hidden heading that names the calculator', () => {
+  const html = page(template, 'es');
+
+  assert.match(html, /<h1 class="sr">Calculadora de ritmo: tiempo final y parciales de 1 km<\/h1>/);
+});
+
+test('page has no help line', () => {
+  const html = page(template, 'en');
+
+  assert.doesNotMatch(html, /id="help"/);
 });
 
 test('page fails on a data-t with no string', () => {
