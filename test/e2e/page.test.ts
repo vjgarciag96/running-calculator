@@ -10,9 +10,11 @@ import {
   lastSplit,
   openPage,
   records,
+  scrollBox,
   serveSite,
   type Site,
   tagText,
+  totalCellStyle,
 } from './site.ts';
 
 // Both boxes take a tap, a key, a paste and a composition the same way, whichever is the goal.
@@ -493,6 +495,211 @@ for (const type of [chromium, webkit]) {
         `top of boxes, records and splits: ${JSON.stringify(order)}`,
       );
     });
+
+    test('a screen 781 px wide shows the splits beside the goal', async () => {
+      await page.setViewportSize({ width: 781, height: 900 });
+
+      const goal = await page.locator('.col').boundingBox();
+      const splits = await page.locator('.splits').boundingBox();
+
+      assert.ok(
+        splits!.x >= goal!.x + goal!.width,
+        `goal ${goal!.x}+${goal!.width}, splits ${splits!.x}`,
+      );
+    });
+
+    test('a screen 780 px wide shows the splits under the world records', async () => {
+      await page.setViewportSize({ width: 780, height: 900 });
+
+      const records = await page.locator('section[aria-labelledby=records]').boundingBox();
+      const splits = await page.locator('.splits').boundingBox();
+
+      assert.ok(
+        splits!.y >= records!.y + records!.height,
+        `records ${records!.y}+${records!.height}, splits ${splits!.y}`,
+      );
+    });
+
+    test("a marathon's splits scroll inside their card on a wide screen", async () => {
+      await page.setViewportSize(DESKTOP);
+
+      await page.locator('[value="marathon"]').click();
+
+      const box = await scrollBox(page);
+      assert.ok(
+        box.scrollHeight > box.clientHeight && box.clientHeight <= 600,
+        `${box.scrollHeight} px of splits in a ${box.clientHeight} px box`,
+      );
+    });
+
+    test("the splits' header row stays in view at the end of a marathon on a wide screen", async () => {
+      await page.setViewportSize(DESKTOP);
+      await page.locator('[value="marathon"]').click();
+
+      await page.locator('tbody tr').last().scrollIntoViewIfNeeded();
+
+      const header = await page.locator('th').first().boundingBox();
+      const box = await page.locator('.scroll').boundingBox();
+      assert.ok(Math.abs(header!.y - box!.y) < 1, `header at ${header!.y}, box at ${box!.y}`);
+    });
+
+    test("the boxes stay in view at the end of a marathon's splits on a wide screen", async () => {
+      await page.setViewportSize(DESKTOP);
+      await page.locator('[value="marathon"]').click();
+
+      await page.locator('tbody tr').last().scrollIntoViewIfNeeded();
+
+      const boxes = await page.locator('.boxes').boundingBox();
+      assert.ok(
+        boxes!.y >= 0 && boxes!.y + boxes!.height <= DESKTOP.height,
+        `boxes at ${boxes!.y}+${boxes!.height}`,
+      );
+    });
+
+    test("a marathon's splits do not scroll inside their card on a narrow screen", async () => {
+      await page.locator('[value="marathon"]').click();
+
+      const box = await scrollBox(page);
+      assert.ok(
+        box.scrollHeight <= box.clientHeight,
+        `${box.scrollHeight} px of splits in a ${box.clientHeight} px box`,
+      );
+    });
+
+    test('Tab from the pace box reaches the splits on a wide screen', async () => {
+      await page.setViewportSize(DESKTOP);
+      await page.locator('#pace').focus();
+
+      await page.keyboard.press('Tab');
+
+      assert.equal(
+        await page.evaluate(() => document.activeElement?.getAttribute('aria-labelledby')),
+        'splits',
+      );
+    });
+
+    test('the splits scroll box is a region named Splits', async () => {
+      assert.equal(await page.getByRole('region', { name: 'Splits', exact: true }).count(), 1);
+    });
+
+    test('the calculator is a region named Calculator', async () => {
+      assert.equal(await page.getByRole('region', { name: 'Calculator', exact: true }).count(), 1);
+    });
+
+    test("a marathon's 5th km and final partial km are shaded and the 6th is not", async () => {
+      await page.locator('[value="marathon"]').click();
+
+      const shading = {
+        5: await totalCellStyle(page, 5, 'background-color'),
+        6: await totalCellStyle(page, 6, 'background-color'),
+        43: await totalCellStyle(page, 43, 'background-color'),
+      };
+      assert.deepEqual(shading, {
+        5: 'rgb(241, 241, 238)',
+        6: 'rgba(0, 0, 0, 0)',
+        43: 'rgb(241, 241, 238)',
+      });
+    });
+
+    test("a marathon's 5th km and final partial km have a bold total and the 6th does not", async () => {
+      await page.locator('[value="marathon"]').click();
+
+      const weights = {
+        5: await totalCellStyle(page, 5, 'font-weight'),
+        6: await totalCellStyle(page, 6, 'font-weight'),
+        43: await totalCellStyle(page, 43, 'font-weight'),
+      };
+      assert.deepEqual(weights, { 5: '600', 6: '400', 43: '600' });
+    });
+
+    test('the splits are marked as even pace', async () => {
+      assert.ok(await page.getByText('Even pace', { exact: true }).isVisible(), 'no Even pace');
+    });
+
+    test('the Spanish page marks the splits as even pace in Spanish', async () => {
+      const spanish = await openPage(browser!, site, 'es');
+
+      const visible = await spanish.getByText('Ritmo constante', { exact: true }).isVisible();
+
+      await spanish.context().close();
+      assert.ok(visible, 'no Ritmo constante');
+    });
+
+    test('the page is headed for screen readers as a pace, finish time and splits calculator', async () => {
+      const heading = page.getByRole('heading', {
+        level: 1,
+        name: 'Running calculator: pace, finish time and 1 km splits',
+        exact: true,
+      });
+
+      assert.equal(await heading.count(), 1);
+    });
+
+    test('the Spanish page is headed for screen readers in Spanish', async () => {
+      const spanish = await openPage(browser!, site, 'es');
+
+      const count = await spanish.getByRole('heading', {
+        level: 1,
+        name: 'Calculadora de ritmo: tiempo final y parciales de 1 km',
+        exact: true,
+      }).count();
+
+      await spanish.context().close();
+      assert.equal(count, 1);
+    });
+
+    test('the Running tools link goes to the page of its language', async () => {
+      const link = page.getByRole('link', { name: 'Running tools', exact: true });
+
+      assert.equal(await link.getAttribute('href'), './');
+    });
+
+    test('a dark colour scheme shows the dark page and accent', async () => {
+      await page.emulateMedia({ colorScheme: 'dark' });
+
+      const colours = {
+        page: await page.locator('body').evaluate((body) => getComputedStyle(body).backgroundColor),
+        goal: await colour(page, '#time-tag'),
+      };
+      assert.deepEqual(colours, { page: 'rgb(15, 15, 14)', goal: 'rgb(255, 138, 80)' });
+    });
+
+    test("on a 390 px screen a record's pace sits beside its time", async () => {
+      const time = await page.locator('.men .time').boundingBox();
+      const pace = await page.locator('.men .time + dd').boundingBox();
+
+      assert.ok(
+        pace!.x >= time!.x + time!.width,
+        `time ${time!.x}+${time!.width}, pace ${pace!.x}`,
+      );
+    });
+
+    test("on a 320 px screen a record's pace sits under its time", async () => {
+      await page.setViewportSize({ width: 320, height: 640 });
+
+      const time = await page.locator('.men .time').boundingBox();
+      const pace = await page.locator('.men .time + dd').boundingBox();
+
+      assert.ok(
+        pace!.x === time!.x && pace!.y >= time!.y + time!.height,
+        `time at ${time!.x},${time!.y}+${time!.height}, pace at ${pace!.x},${pace!.y}`,
+      );
+    });
+
+    for (const width of [320, 390, 780, 781, 1280]) {
+      test(`the Spanish page does not scroll sideways at ${width} px`, async () => {
+        const spanish = await openPage(browser!, site, 'es');
+
+        await spanish.setViewportSize({ width, height: 800 });
+
+        const { scrollWidth, clientWidth } = await spanish.evaluate(() => ({
+          scrollWidth: document.documentElement.scrollWidth,
+          clientWidth: document.documentElement.clientWidth,
+        }));
+        await spanish.context().close();
+        assert.ok(scrollWidth <= clientWidth, `${scrollWidth} px of page in ${clientWidth} px`);
+      });
+    }
 
     for (const { preset, en } of RECORDS) {
       test(`the ${preset} shows its men's and women's world records`, async () => {
