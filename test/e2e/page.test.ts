@@ -749,6 +749,43 @@ for (const type of [chromium, webkit]) {
       assert.ok(scrollWidth <= clientWidth, `${scrollWidth} px of distances in ${clientWidth} px`);
     });
 
+    for (const scheme of ['light', 'dark'] as const) {
+      test(`in a ${scheme} scheme the selected distance is ringed like the boxes and the others are not`, async () => {
+        await page.emulateMedia({ colorScheme: scheme });
+
+        const edge = await page.locator('.pairs').first().evaluate((box) =>
+          getComputedStyle(box).borderTopColor
+        );
+        const rings = await page.locator('.picker label').evaluateAll((labels) =>
+          labels.map((label) => getComputedStyle(label).boxShadow)
+        );
+
+        assert.deepEqual(
+          rings.map((ring) => ring.includes(`${edge} 0px 0px 0px 1px`)),
+          [false, true, false, false],
+          `box border ${edge}, distance shadows ${JSON.stringify(rings)}`,
+        );
+      });
+    }
+
+    for (const width of [390, DESKTOP.width]) {
+      test(`on a ${width} px screen the Spanish half marathon fits its distance on one line`, async () => {
+        const spanish = await openPage(browser!, site, 'es');
+        await spanish.setViewportSize({ width, height: 800 });
+
+        await spanish.locator('[value="half"]').click();
+
+        // A range over the text has one box per line; the label itself is one box however it wraps.
+        const lines = await spanish.locator('label:has([value="half"]) span').evaluate((label) => {
+          const text = document.createRange();
+          text.selectNodeContents(label);
+          return text.getClientRects().length;
+        });
+        await spanish.context().close();
+        assert.equal(lines, 1);
+      });
+    }
+
     for (const box of BOXES) {
       describe(`${box.kind} box`, () => {
         const id = `#${box.kind}`;

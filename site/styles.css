@@ -99,13 +99,14 @@ fieldset {
   align-items: center;
   justify-content: center;
   min-height: 44px;
-  padding: 4px 12px;
+  padding: 4px 6px;
   border-radius: 8px;
   color: var(--muted);
   font-weight: 500;
   font-size: 15px;
   line-height: 1.2;
   text-align: center;
+  white-space: nowrap;
 }
 
 .picker label:hover,
@@ -115,7 +116,7 @@ fieldset {
 
 .picker label:has(:checked) {
   background: var(--surface);
-  box-shadow: 0 1px 2px #00000014, 0 0 0 1px var(--line);
+  box-shadow: 0 1px 2px #00000014, 0 0 0 1px var(--edge);
 }
 
 .picker input {
@@ -330,7 +331,7 @@ dd:last-child {
   line-height: 1;
 }
 
-/* At 320 px three columns don't fit, nor do the Spanish distances with their padding. */
+/* At 320 px three columns don't fit, nor do the Spanish distances on one line. */
 @media (width < 375px) {
   dl div {
     grid-template-columns: 56px 1fr;
@@ -338,6 +339,7 @@ dd:last-child {
 
   .picker label {
     padding-inline: 4px;
+    white-space: normal;
   }
 
   .time + dd {
