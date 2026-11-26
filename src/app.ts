@@ -39,7 +39,13 @@ presets.value = inputs.preset;
 render(inputs);
 
 for (const radio of presets) {
-  radio.addEventListener('input', changeDistance);
+  radio.addEventListener('input', () => {
+    // WebKit draws no focus ring on a radio reached by an arrow key, but does once script focuses
+    // it again after the key. This also focuses a clicked radio there, as other browsers do.
+    radio.blur();
+    radio.focus();
+    changeDistance();
+  });
 }
 // Results are live, so Enter has nothing to submit and would only reload the page.
 form.addEventListener('submit', (event) => event.preventDefault());

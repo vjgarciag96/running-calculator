@@ -786,6 +786,20 @@ for (const type of [chromium, webkit]) {
       });
     }
 
+    test('an arrow key from a distance focused with Tab shows the focus ring on the next one', async () => {
+      await page.locator('#time').focus();
+      // WebKit, like Safari by default, tabs only to text fields unless Option is held.
+      await page.keyboard.press(type === webkit ? 'Alt+Shift+Tab' : 'Shift+Tab');
+
+      await page.keyboard.press('ArrowRight');
+
+      const focused = await page.evaluate(() => {
+        const radio = document.activeElement as HTMLInputElement;
+        return { value: radio.value, outline: getComputedStyle(radio).outlineStyle };
+      });
+      assert.deepEqual(focused, { value: 'half', outline: 'solid' });
+    });
+
     for (const box of BOXES) {
       describe(`${box.kind} box`, () => {
         const id = `#${box.kind}`;
