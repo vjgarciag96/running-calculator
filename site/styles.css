@@ -128,15 +128,6 @@ fieldset {
   cursor: pointer;
 }
 
-/* High-contrast modes drop backgrounds, so mark the choice with the selection colour. */
-@media (forced-colors: active) {
-  .picker label:has(:checked) {
-    forced-color-adjust: none;
-    background: Highlight;
-    color: HighlightText;
-  }
-}
-
 /* Read by screen readers only. */
 .sr,
 legend {
@@ -227,7 +218,10 @@ input:focus-visible {
   color: var(--on-accent);
 }
 
+/* High-contrast modes drop backgrounds, so mark the choice and the highlight with the selection
+   colour. */
 @media (forced-colors: active) {
+  .picker label:has(:checked),
   .clock.selected:has(:focus) .zeros + span {
     forced-color-adjust: none;
     background: Highlight;
