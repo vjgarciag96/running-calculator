@@ -468,17 +468,19 @@ for (const type of [chromium, webkit]) {
       assert.deepEqual(tags, { time: 'Calculado', pace: 'Tu objetivo' });
     });
 
-    test('a wide screen shows the splits beside the goal', async () => {
-      await page.setViewportSize(DESKTOP);
+    for (const width of [781, DESKTOP.width]) {
+      test(`a screen ${width} px wide shows the splits beside the goal`, async () => {
+        await page.setViewportSize({ width, height: 900 });
 
-      const goal = await page.locator('.col').boundingBox();
-      const splits = await page.locator('.splits').boundingBox();
+        const goal = await page.locator('.col').boundingBox();
+        const splits = await page.locator('.splits').boundingBox();
 
-      assert.ok(
-        splits!.x >= goal!.x + goal!.width,
-        `goal ${goal!.x}+${goal!.width}, splits ${splits!.x}`,
-      );
-    });
+        assert.ok(
+          splits!.x >= goal!.x + goal!.width,
+          `goal ${goal!.x}+${goal!.width}, splits ${splits!.x}`,
+        );
+      });
+    }
 
     test('the world records sit between the boxes and the splits', async () => {
       const top = (selector: string) =>
@@ -493,18 +495,6 @@ for (const type of [chromium, webkit]) {
       assert.ok(
         order.boxes < order.records && order.records < order.splits,
         `top of boxes, records and splits: ${JSON.stringify(order)}`,
-      );
-    });
-
-    test('a screen 781 px wide shows the splits beside the goal', async () => {
-      await page.setViewportSize({ width: 781, height: 900 });
-
-      const goal = await page.locator('.col').boundingBox();
-      const splits = await page.locator('.splits').boundingBox();
-
-      assert.ok(
-        splits!.x >= goal!.x + goal!.width,
-        `goal ${goal!.x}+${goal!.width}, splits ${splits!.x}`,
       );
     });
 
@@ -540,7 +530,10 @@ for (const type of [chromium, webkit]) {
 
       const header = await page.locator('th').first().boundingBox();
       const box = await page.locator('.scroll').boundingBox();
-      assert.ok(Math.abs(header!.y - box!.y) < 1, `header at ${header!.y}, box at ${box!.y}`);
+      assert.ok(
+        header!.y >= 0 && Math.abs(header!.y - box!.y) < 1,
+        `header at ${header!.y}, box at ${box!.y}`,
+      );
     });
 
     test("the boxes stay in view at the end of a marathon's splits on a wide screen", async () => {
@@ -798,6 +791,30 @@ for (const type of [chromium, webkit]) {
         return { value: radio.value, outline: getComputedStyle(radio).outlineStyle };
       });
       assert.deepEqual(focused, { value: 'half', outline: 'solid' });
+    });
+
+    test('the finish time box focused with Tab is drawn in the accent with a ring', async () => {
+      await page.locator('[value=marathon]').focus();
+
+      await page.keyboard.press('Tab');
+
+      const look = await page.locator('.clock:has(#time) .pairs').evaluate((box) => ({
+        border: getComputedStyle(box).borderTopColor,
+        ringed: getComputedStyle(box).boxShadow !== 'none',
+      }));
+      assert.deepEqual(look, { border: await colour(page, '#time-tag'), ringed: true });
+    });
+
+    test('an out of range finish time keeps its box in the accent after leaving it', async () => {
+      await page.locator('#time').tap();
+      await page.keyboard.type('99');
+
+      await page.locator('#time').blur();
+
+      const border = await page.locator('.clock:has(#time) .pairs').evaluate((box) =>
+        getComputedStyle(box).borderTopColor
+      );
+      assert.equal(border, await colour(page, '#time-tag'));
     });
 
     for (const box of BOXES) {
