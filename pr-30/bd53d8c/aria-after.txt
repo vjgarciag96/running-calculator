@@ -1,0 +1,130 @@
+- banner:
+  - link "Running tools":
+    - /url: ./
+- main:
+  - 'heading "Running calculator: pace, finish time and 1 km splits" [level=1]'
+  - region "Calculator":
+    - heading "Calculator" [level=2]
+    - group "Distance":
+      - text: Distance
+      - radio "5K"
+      - text: 5K
+      - radio "10K"
+      - text: 10K
+      - radio "Half" [checked]
+      - text: Half
+      - radio "Marathon"
+      - text: Marathon
+    - text: Finish time Your goal
+    - textbox "Finish time": "5000"
+    - text: 50:00 Pace per km Calculated
+    - textbox "Pace per km": "222"
+    - text: 2:22 /km
+  - region "World records":
+    - heading "World records" [level=2]
+    - term: Men
+    - definition: 57:20
+    - definition: 2:43 /km
+    - definition: Jacob Kiplimo, 2026
+    - term: Women
+    - definition: 1:02:52
+    - definition: 2:59 /km
+    - definition: Letesenbet Gidey, 2021
+  - heading "Splits" [level=2]
+  - text: Even pace
+  - region "Splits":
+    - table "Splits":
+      - rowgroup:
+        - row "km Split Total":
+          - columnheader "km"
+          - columnheader "Split"
+          - columnheader "Total"
+      - rowgroup:
+        - row "1 2:22 2:22":
+          - cell "1"
+          - cell "2:22"
+          - cell "2:22"
+        - row "2 2:22 4:44":
+          - cell "2"
+          - cell "2:22"
+          - cell "4:44"
+        - row "3 2:22 7:07":
+          - cell "3"
+          - cell "2:22"
+          - cell "7:07"
+        - row "4 2:22 9:29":
+          - cell "4"
+          - cell "2:22"
+          - cell "9:29"
+        - row "5 2:22 11:51":
+          - cell "5"
+          - cell "2:22"
+          - cell "11:51"
+        - row "6 2:22 14:13":
+          - cell "6"
+          - cell "2:22"
+          - cell "14:13"
+        - row "7 2:22 16:35":
+          - cell "7"
+          - cell "2:22"
+          - cell "16:35"
+        - row "8 2:22 18:58":
+          - cell "8"
+          - cell "2:22"
+          - cell "18:58"
+        - row "9 2:22 21:20":
+          - cell "9"
+          - cell "2:22"
+          - cell "21:20"
+        - row "10 2:22 23:42":
+          - cell "10"
+          - cell "2:22"
+          - cell "23:42"
+        - row "11 2:22 26:04":
+          - cell "11"
+          - cell "2:22"
+          - cell "26:04"
+        - row "12 2:22 28:26":
+          - cell "12"
+          - cell "2:22"
+          - cell "28:26"
+        - row "13 2:22 30:49":
+          - cell "13"
+          - cell "2:22"
+          - cell "30:49"
+        - row "14 2:22 33:11":
+          - cell "14"
+          - cell "2:22"
+          - cell "33:11"
+        - row "15 2:22 35:33":
+          - cell "15"
+          - cell "2:22"
+          - cell "35:33"
+        - row "16 2:22 37:55":
+          - cell "16"
+          - cell "2:22"
+          - cell "37:55"
+        - row "17 2:22 40:17":
+          - cell "17"
+          - cell "2:22"
+          - cell "40:17"
+        - row "18 2:22 42:40":
+          - cell "18"
+          - cell "2:22"
+          - cell "42:40"
+        - row "19 2:22 45:02":
+          - cell "19"
+          - cell "2:22"
+          - cell "45:02"
+        - row "20 2:22 47:24":
+          - cell "20"
+          - cell "2:22"
+          - cell "47:24"
+        - row "21 2:22 49:46":
+          - cell "21"
+          - cell "2:22"
+          - cell "49:46"
+        - row "21.0975 0:14 50:00":
+          - cell "21.0975"
+          - cell "0:14"
+          - cell "50:00"
