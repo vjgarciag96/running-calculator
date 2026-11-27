@@ -10,9 +10,11 @@ import {
   lastSplit,
   openPage,
   records,
+  scrollBox,
   serveSite,
   type Site,
   tagText,
+  totalCellStyle,
 } from './site.ts';
 
 // Both boxes take a tap, a key, a paste and a composition the same way, whichever is the goal.
@@ -45,8 +47,8 @@ const BOXES = [
   },
 ] as const;
 
-// A laptop's window, wide enough for the splits beside the goal and tall enough to keep it in view.
-const DESKTOP = { width: 1440, height: 900 };
+// A laptop's window, wide enough for the splits beside the goal.
+const DESKTOP = { width: 1280, height: 900 };
 
 // The records block for each distance, as it reads on the English page.
 const RECORDS = [
@@ -387,24 +389,16 @@ for (const type of [chromium, webkit]) {
 
       await page.keyboard.press('Backspace');
 
-      assert.equal(
-        await description(page, 'time'),
-        'Calculated Change either one and the other follows. Your goal stays put when you switch distance.',
-      );
+      assert.equal(await description(page, 'time'), 'Calculated');
     });
 
-    test('each box describes its value as a time, with its tag and the help', async () => {
+    test('each box describes its value as a time, with its tag', async () => {
       const described = {
         time: await description(page, 'time'),
         pace: await description(page, 'pace'),
       };
 
-      assert.deepEqual(described, {
-        time:
-          '50:00 Your goal Change either one and the other follows. Your goal stays put when you switch distance.',
-        pace:
-          '5:00 /km Calculated Change either one and the other follows. Your goal stays put when you switch distance.',
-      });
+      assert.deepEqual(described, { time: '50:00 Your goal', pace: '5:00 /km Calculated' });
     });
 
     test('a swap and a distance switch update what each box describes', async () => {
@@ -417,12 +411,7 @@ for (const type of [chromium, webkit]) {
         time: await description(page, 'time'),
         pace: await description(page, 'pace'),
       };
-      assert.deepEqual(described, {
-        time:
-          '1:34:56 Calculated Change either one and the other follows. Your goal stays put when you switch distance.',
-        pace:
-          '4:30 /km Your goal Change either one and the other follows. Your goal stays put when you switch distance.',
-      });
+      assert.deepEqual(described, { time: '1:34:56 Calculated', pace: '4:30 /km Your goal' });
     });
 
     test('the default page shows ten splits ending at 10 km in 50:00', async () => {
@@ -451,8 +440,8 @@ for (const type of [chromium, webkit]) {
         pace: await page.locator('#pace').getAttribute('aria-describedby'),
       };
       assert.deepEqual(describedBy, {
-        time: 'time-value time-tag help',
-        pace: 'pace-value pace-tag help message',
+        time: 'time-value time-tag',
+        pace: 'pace-value pace-tag message',
       });
     });
 
@@ -479,40 +468,19 @@ for (const type of [chromium, webkit]) {
       assert.deepEqual(tags, { time: 'Calculado', pace: 'Tu objetivo' });
     });
 
-    test('a wide screen shows the splits beside the goal', async () => {
-      await page.setViewportSize(DESKTOP);
+    for (const width of [781, DESKTOP.width]) {
+      test(`a screen ${width} px wide shows the splits beside the goal`, async () => {
+        await page.setViewportSize({ width, height: 900 });
 
-      const goal = await page.locator('.controls').boundingBox();
-      const splits = await page.locator('table').boundingBox();
+        const goal = await page.locator('.col').boundingBox();
+        const splits = await page.locator('.splits').boundingBox();
 
-      assert.ok(
-        splits!.x >= goal!.x + goal!.width,
-        `goal ${goal!.x}+${goal!.width}, splits ${splits!.x}`,
-      );
-    });
-
-    test("the goal stays in view at the end of a marathon's splits on a wide screen", async () => {
-      await page.setViewportSize(DESKTOP);
-      await page.locator('[value="marathon"]').click();
-
-      await page.locator('tbody tr').last().scrollIntoViewIfNeeded();
-
-      const goal = await page.locator('.controls').boundingBox();
-      assert.ok(
-        goal!.y >= 0 && goal!.y + goal!.height <= DESKTOP.height,
-        `goal at ${goal!.y}+${goal!.height}`,
-      );
-    });
-
-    test('on a wide but short window the goal scrolls away instead of being cut off', async () => {
-      await page.setViewportSize({ width: DESKTOP.width, height: 700 });
-      await page.locator('[value="marathon"]').click();
-
-      await page.locator('tbody tr').nth(20).scrollIntoViewIfNeeded();
-
-      const goal = await page.locator('.controls').boundingBox();
-      assert.ok(goal!.y < 0, `goal at ${goal!.y}`);
-    });
+        assert.ok(
+          splits!.x >= goal!.x + goal!.width,
+          `goal ${goal!.x}+${goal!.width}, splits ${splits!.x}`,
+        );
+      });
+    }
 
     test('the world records sit between the boxes and the splits', async () => {
       const top = (selector: string) =>
@@ -520,8 +488,8 @@ for (const type of [chromium, webkit]) {
 
       const order = {
         boxes: await top('.boxes'),
-        records: await top('section'),
-        splits: await top('table'),
+        records: await top('section[aria-labelledby=records]'),
+        splits: await top('.splits'),
       };
 
       assert.ok(
@@ -529,6 +497,202 @@ for (const type of [chromium, webkit]) {
         `top of boxes, records and splits: ${JSON.stringify(order)}`,
       );
     });
+
+    test('a screen 780 px wide shows the splits under the world records', async () => {
+      await page.setViewportSize({ width: 780, height: 900 });
+
+      const records = await page.locator('section[aria-labelledby=records]').boundingBox();
+      const splits = await page.locator('.splits').boundingBox();
+
+      assert.ok(
+        splits!.y >= records!.y + records!.height,
+        `records ${records!.y}+${records!.height}, splits ${splits!.y}`,
+      );
+    });
+
+    test("a marathon's splits scroll inside their card on a wide screen", async () => {
+      await page.setViewportSize(DESKTOP);
+
+      await page.locator('[value="marathon"]').click();
+
+      const box = await scrollBox(page);
+      assert.ok(
+        box.scrollHeight > box.clientHeight && box.clientHeight <= 600,
+        `${box.scrollHeight} px of splits in a ${box.clientHeight} px box`,
+      );
+    });
+
+    test("the splits' header row stays in view at the end of a marathon on a wide screen", async () => {
+      await page.setViewportSize(DESKTOP);
+      await page.locator('[value="marathon"]').click();
+
+      await page.locator('tbody tr').last().scrollIntoViewIfNeeded();
+
+      const header = await page.locator('th').first().boundingBox();
+      const box = await page.locator('.scroll').boundingBox();
+      assert.ok(
+        header!.y >= 0 && Math.abs(header!.y - box!.y) < 1,
+        `header at ${header!.y}, box at ${box!.y}`,
+      );
+    });
+
+    test("the boxes stay in view at the end of a marathon's splits on a wide screen", async () => {
+      await page.setViewportSize(DESKTOP);
+      await page.locator('[value="marathon"]').click();
+
+      await page.locator('tbody tr').last().scrollIntoViewIfNeeded();
+
+      const boxes = await page.locator('.boxes').boundingBox();
+      assert.ok(
+        boxes!.y >= 0 && boxes!.y + boxes!.height <= DESKTOP.height,
+        `boxes at ${boxes!.y}+${boxes!.height}`,
+      );
+    });
+
+    test("a marathon's splits do not scroll inside their card on a narrow screen", async () => {
+      await page.locator('[value="marathon"]').click();
+
+      const box = await scrollBox(page);
+      assert.ok(
+        box.scrollHeight <= box.clientHeight,
+        `${box.scrollHeight} px of splits in a ${box.clientHeight} px box`,
+      );
+    });
+
+    test('Tab from the pace box reaches the splits on a wide screen', async () => {
+      await page.setViewportSize(DESKTOP);
+      await page.locator('#pace').focus();
+
+      await page.keyboard.press('Tab');
+
+      assert.equal(
+        await page.evaluate(() => document.activeElement?.getAttribute('aria-labelledby')),
+        'splits',
+      );
+    });
+
+    test('the splits scroll box is a region named Splits', async () => {
+      assert.equal(await page.getByRole('region', { name: 'Splits', exact: true }).count(), 1);
+    });
+
+    test('the calculator is a region named Calculator', async () => {
+      assert.equal(await page.getByRole('region', { name: 'Calculator', exact: true }).count(), 1);
+    });
+
+    test("a marathon's 5th km and final partial km are shaded and the 6th is not", async () => {
+      await page.locator('[value="marathon"]').click();
+
+      const shading = {
+        5: await totalCellStyle(page, 5, 'background-color'),
+        6: await totalCellStyle(page, 6, 'background-color'),
+        43: await totalCellStyle(page, 43, 'background-color'),
+      };
+      assert.deepEqual(shading, {
+        5: 'rgb(241, 241, 238)',
+        6: 'rgba(0, 0, 0, 0)',
+        43: 'rgb(241, 241, 238)',
+      });
+    });
+
+    test("a marathon's 5th km and final partial km have a bold total and the 6th does not", async () => {
+      await page.locator('[value="marathon"]').click();
+
+      const weights = {
+        5: await totalCellStyle(page, 5, 'font-weight'),
+        6: await totalCellStyle(page, 6, 'font-weight'),
+        43: await totalCellStyle(page, 43, 'font-weight'),
+      };
+      assert.deepEqual(weights, { 5: '600', 6: '400', 43: '600' });
+    });
+
+    test('the splits are marked as even pace', async () => {
+      assert.ok(await page.getByText('Even pace', { exact: true }).isVisible(), 'no Even pace');
+    });
+
+    test('the Spanish page marks the splits as even pace in Spanish', async () => {
+      const spanish = await openPage(browser!, site, 'es');
+
+      const visible = await spanish.getByText('Ritmo constante', { exact: true }).isVisible();
+
+      await spanish.context().close();
+      assert.ok(visible, 'no Ritmo constante');
+    });
+
+    test('the page is headed for screen readers as a pace, finish time and splits calculator', async () => {
+      const heading = page.getByRole('heading', {
+        level: 1,
+        name: 'Running calculator: pace, finish time and 1 km splits',
+        exact: true,
+      });
+
+      assert.equal(await heading.count(), 1);
+    });
+
+    test('the Spanish page is headed for screen readers in Spanish', async () => {
+      const spanish = await openPage(browser!, site, 'es');
+
+      const count = await spanish.getByRole('heading', {
+        level: 1,
+        name: 'Calculadora de ritmo: tiempo final y parciales de 1 km',
+        exact: true,
+      }).count();
+
+      await spanish.context().close();
+      assert.equal(count, 1);
+    });
+
+    test('the Running tools link goes to the page of its language', async () => {
+      const link = page.getByRole('link', { name: 'Running tools', exact: true });
+
+      assert.equal(await link.getAttribute('href'), './');
+    });
+
+    test('a dark colour scheme shows the dark page and accent', async () => {
+      await page.emulateMedia({ colorScheme: 'dark' });
+
+      const colours = {
+        page: await page.locator('body').evaluate((body) => getComputedStyle(body).backgroundColor),
+        goal: await colour(page, '#time-tag'),
+      };
+      assert.deepEqual(colours, { page: 'rgb(15, 15, 14)', goal: 'rgb(255, 138, 80)' });
+    });
+
+    test("on a 390 px screen a record's pace sits beside its time", async () => {
+      const time = await page.locator('.men .time').boundingBox();
+      const pace = await page.locator('.men .time + dd').boundingBox();
+
+      assert.ok(
+        pace!.x >= time!.x + time!.width,
+        `time ${time!.x}+${time!.width}, pace ${pace!.x}`,
+      );
+    });
+
+    test("on a 320 px screen a record's pace sits under its time", async () => {
+      await page.setViewportSize({ width: 320, height: 640 });
+
+      const time = await page.locator('.men .time').boundingBox();
+      const pace = await page.locator('.men .time + dd').boundingBox();
+
+      assert.ok(
+        pace!.x === time!.x && pace!.y >= time!.y + time!.height,
+        `time at ${time!.x},${time!.y}+${time!.height}, pace at ${pace!.x},${pace!.y}`,
+      );
+    });
+
+    for (const width of [320, 390, 780, 781, 1280]) {
+      test(`the Spanish page does not scroll sideways at ${width} px`, async () => {
+        const spanish = await openPage(browser!, site, 'es');
+
+        await spanish.setViewportSize({ width, height: 800 });
+
+        const { scrollWidth, clientWidth } = await spanish.evaluate(() => ({
+          scrollWidth: document.documentElement.scrollWidth,
+          clientWidth: document.documentElement.clientWidth,
+        }));
+        await spanish.context().close();
+        assert.ok(scrollWidth <= clientWidth, `${scrollWidth} px of page in ${clientWidth} px`);
+      });
+    }
 
     for (const { preset, en } of RECORDS) {
       test(`the ${preset} shows its men's and women's world records`, async () => {
@@ -576,6 +740,81 @@ for (const type of [chromium, webkit]) {
 
       await spanish.context().close();
       assert.ok(scrollWidth <= clientWidth, `${scrollWidth} px of distances in ${clientWidth} px`);
+    });
+
+    for (const scheme of ['light', 'dark'] as const) {
+      test(`in a ${scheme} scheme the selected distance is ringed like the boxes and the others are not`, async () => {
+        await page.emulateMedia({ colorScheme: scheme });
+
+        const edge = await page.locator('.pairs').first().evaluate((box) =>
+          getComputedStyle(box).borderTopColor
+        );
+        const rings = await page.locator('.picker label').evaluateAll((labels) =>
+          labels.map((label) => getComputedStyle(label).boxShadow)
+        );
+
+        assert.deepEqual(
+          rings.map((ring) => ring.includes(`${edge} 0px 0px 0px 1px`)),
+          [false, true, false, false],
+          `box border ${edge}, distance shadows ${JSON.stringify(rings)}`,
+        );
+      });
+    }
+
+    for (const width of [390, DESKTOP.width]) {
+      test(`on a ${width} px screen the Spanish half marathon fits its distance on one line`, async () => {
+        const spanish = await openPage(browser!, site, 'es');
+        await spanish.setViewportSize({ width, height: 800 });
+
+        await spanish.locator('[value="half"]').click();
+
+        // A range over the text has one box per line; the label itself is one box however it wraps.
+        const lines = await spanish.locator('label:has([value="half"]) span').evaluate((label) => {
+          const text = document.createRange();
+          text.selectNodeContents(label);
+          return text.getClientRects().length;
+        });
+        await spanish.context().close();
+        assert.equal(lines, 1);
+      });
+    }
+
+    test('an arrow key from a distance focused with Tab shows the focus ring on the next one', async () => {
+      await page.locator('#time').focus();
+      // WebKit, like Safari by default, tabs only to text fields unless Option is held.
+      await page.keyboard.press(type === webkit ? 'Alt+Shift+Tab' : 'Shift+Tab');
+
+      await page.keyboard.press('ArrowRight');
+
+      const focused = await page.evaluate(() => {
+        const radio = document.activeElement as HTMLInputElement;
+        return { value: radio.value, outline: getComputedStyle(radio).outlineStyle };
+      });
+      assert.deepEqual(focused, { value: 'half', outline: 'solid' });
+    });
+
+    test('the finish time box focused with Tab is drawn in the accent with a ring', async () => {
+      await page.locator('[value=marathon]').focus();
+
+      await page.keyboard.press('Tab');
+
+      const look = await page.locator('.clock:has(#time) .pairs').evaluate((box) => ({
+        border: getComputedStyle(box).borderTopColor,
+        ringed: getComputedStyle(box).boxShadow !== 'none',
+      }));
+      assert.deepEqual(look, { border: await colour(page, '#time-tag'), ringed: true });
+    });
+
+    test('an out of range finish time keeps its box in the accent after leaving it', async () => {
+      await page.locator('#time').tap();
+      await page.keyboard.type('99');
+
+      await page.locator('#time').blur();
+
+      const border = await page.locator('.clock:has(#time) .pairs').evaluate((box) =>
+        getComputedStyle(box).borderTopColor
+      );
+      assert.equal(border, await colour(page, '#time-tag'));
     });
 
     for (const box of BOXES) {

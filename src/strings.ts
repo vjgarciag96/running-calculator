@@ -2,7 +2,9 @@
 // misses one. page.html refers to keys with data-t, and the build fills them in per locale.
 const en = {
   title: 'Running calculator',
+  heading: 'Running calculator: pace, finish time and 1 km splits',
   description: 'Pace, finish time and 1 km splits for a 5K, 10K, half marathon or marathon.',
+  calculator: 'Calculator',
   distance: 'Distance',
   '5k': '5K',
   '10k': '10K',
@@ -13,12 +15,12 @@ const en = {
   paceField: 'Pace per km',
   yourGoal: 'Your goal',
   calculated: 'Calculated',
-  help: 'Change either one and the other follows. Your goal stays put when you switch distance.',
   'out-of-range': 'Minutes and seconds go up to 59, and the time must be above 0.',
   records: 'World records',
   men: 'Men',
   women: 'Women',
   splits: 'Splits',
+  evenPace: 'Even pace',
   km: 'km',
   split: 'Split',
   total: 'Total',
@@ -28,7 +30,9 @@ export type Messages = Record<keyof typeof en, string>;
 
 const es: Messages = {
   title: 'Calculadora de ritmo',
+  heading: 'Calculadora de ritmo: tiempo final y parciales de 1 km',
   description: 'Ritmo, tiempo final y parciales de 1 km para 5K, 10K, media maratón o maratón.',
+  calculator: 'Calculadora',
   distance: 'Distancia',
   '5k': '5K',
   '10k': '10K',
@@ -39,14 +43,13 @@ const es: Messages = {
   paceField: 'Ritmo por km',
   yourGoal: 'Tu objetivo',
   calculated: 'Calculado',
-  help:
-    'Cambia cualquiera de los dos y el otro se ajusta. Tu objetivo se mantiene al cambiar de distancia.',
   'out-of-range':
     'Los minutos y los segundos llegan hasta 59, y el tiempo tiene que ser mayor que 0.',
   records: 'Récords mundiales',
   men: 'Hombres',
   women: 'Mujeres',
   splits: 'Parciales',
+  evenPace: 'Ritmo constante',
   km: 'km',
   split: 'Parcial',
   total: 'Total',

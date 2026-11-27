@@ -138,10 +138,28 @@ export async function lastSplit(page: Page): Promise<string[]> {
 
 /** The world records block as read: its heading, then each entry's label and values in order. */
 export async function records(page: Page): Promise<string[][]> {
-  const section = page.locator('section');
+  const section = page.locator('section[aria-labelledby=records]');
   return [
     [(await section.locator('h2').textContent())!],
     await section.locator('.men > *').allTextContents(),
     await section.locator('.women > *').allTextContents(),
   ];
+}
+
+/** The splits scroll box's content height and visible height. */
+export async function scrollBox(
+  page: Page,
+): Promise<{ scrollHeight: number; clientHeight: number }> {
+  return page.locator('.scroll').evaluate((box) => ({
+    scrollHeight: box.scrollHeight,
+    clientHeight: box.clientHeight,
+  }));
+}
+
+/** A computed style of the Total cell in the splits' row for kilometre `row`, counting from 1. */
+export async function totalCellStyle(page: Page, row: number, property: string): Promise<string> {
+  return page.locator(`tbody tr:nth-child(${row}) td:last-child`).evaluate(
+    (cell, property) => getComputedStyle(cell).getPropertyValue(property),
+    property,
+  );
 }
