@@ -26,5 +26,5 @@ All calculations run in the browser.
 
 - `npm test` runs the unit tests.
 - `npm run test:e2e` tests the built site after `npx playwright install chromium webkit`.
-- `npm run fmt:check` checks formatting, and `npm run size` checks the 10 KiB gzipped
+- `npm run fmt:check` checks formatting, and `npm run size` checks the 11 KiB gzipped
   size budget after a build.

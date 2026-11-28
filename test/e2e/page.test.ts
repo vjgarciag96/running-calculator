@@ -510,15 +510,50 @@ for (const type of [chromium, webkit]) {
       );
     });
 
-    test("a marathon's splits scroll inside their card on a wide screen", async () => {
-      await page.setViewportSize(DESKTOP);
+    test("a marathon's splits show every row without scrolling in a window tall enough", async () => {
+      await page.setViewportSize({ width: DESKTOP.width, height: 2000 });
+
+      await page.locator('[value="marathon"]').click();
+
+      const box = await scrollBox(page);
+      assert.equal(box.scrollHeight, box.clientHeight, 'splits box scrolls');
+    });
+
+    test("a marathon's splits scroll inside their card in a short window", async () => {
+      await page.setViewportSize({ width: DESKTOP.width, height: 800 });
 
       await page.locator('[value="marathon"]').click();
 
       const box = await scrollBox(page);
       assert.ok(
-        box.scrollHeight > box.clientHeight && box.clientHeight <= 600,
+        box.scrollHeight > box.clientHeight,
         `${box.scrollHeight} px of splits in a ${box.clientHeight} px box`,
+      );
+    });
+
+    test("a marathon's splits fill a short window down to its bottom gap", async () => {
+      await page.setViewportSize({ width: DESKTOP.width, height: 800 });
+      await page.locator('[value="marathon"]').click();
+
+      await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
+
+      const splits = await page.locator('.splits').boundingBox();
+      assert.ok(
+        Math.abs(splits!.y + splits!.height - 784) < 1,
+        `splits end at ${splits!.y + splits!.height}, not 16 px above the window's bottom`,
+      );
+    });
+
+    test("a marathon's splits stay in view at the end of a window shorter than the goal", async () => {
+      await page.setViewportSize({ width: DESKTOP.width, height: 600 });
+      await page.locator('[value="marathon"]').click();
+
+      await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
+
+      const splits = await page.locator('.splits').boundingBox();
+      assert.ok(
+        splits!.y >= 0 && splits!.y + splits!.height <= 600,
+        `splits at ${splits!.y}+${splits!.height}`,
       );
     });
 

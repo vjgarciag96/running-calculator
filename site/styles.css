@@ -419,10 +419,20 @@ tbody tr:is(:nth-child(5n), :last-child) td:last-child {
   main {
     grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
     align-items: start;
+    padding-bottom: 16px;
+  }
+
+  /* As tall as the window allows, 16px from its top and, with main's bottom padding, from its
+     bottom, so the whole card stays in view while its rows scroll. */
+  .splits {
+    position: sticky;
+    top: 16px;
+    display: flex;
+    flex-flow: column;
+    max-height: calc(100dvh - 32px);
   }
 
   .scroll {
-    max-height: 600px;
     overflow: auto;
   }
 
