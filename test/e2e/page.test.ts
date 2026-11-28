@@ -511,7 +511,7 @@ for (const type of [chromium, webkit]) {
     });
 
     test("a marathon's splits show every row without scrolling in a window tall enough", async () => {
-      await page.setViewportSize({ width: 1280, height: 2000 });
+      await page.setViewportSize({ width: DESKTOP.width, height: 2000 });
 
       await page.locator('[value="marathon"]').click();
 
@@ -520,7 +520,7 @@ for (const type of [chromium, webkit]) {
     });
 
     test("a marathon's splits scroll inside their card in a short window", async () => {
-      await page.setViewportSize({ width: 1280, height: 800 });
+      await page.setViewportSize({ width: DESKTOP.width, height: 800 });
 
       await page.locator('[value="marathon"]').click();
 
@@ -532,7 +532,7 @@ for (const type of [chromium, webkit]) {
     });
 
     test("a marathon's splits fill a short window down to its bottom gap", async () => {
-      await page.setViewportSize({ width: 1280, height: 800 });
+      await page.setViewportSize({ width: DESKTOP.width, height: 800 });
       await page.locator('[value="marathon"]').click();
 
       await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
@@ -545,7 +545,7 @@ for (const type of [chromium, webkit]) {
     });
 
     test("a marathon's splits stay in view at the end of a window shorter than the goal", async () => {
-      await page.setViewportSize({ width: 1280, height: 600 });
+      await page.setViewportSize({ width: DESKTOP.width, height: 600 });
       await page.locator('[value="marathon"]').click();
 
       await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));

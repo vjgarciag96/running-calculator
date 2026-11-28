@@ -422,7 +422,8 @@ tbody tr:is(:nth-child(5n), :last-child) td:last-child {
     padding-bottom: 16px;
   }
 
-  /* Fill the window, not a fixed height. */
+  /* As tall as the window allows, 16px from its top and, with main's bottom padding, from its
+     bottom, so the whole card stays in view while its rows scroll. */
   .splits {
     position: sticky;
     top: 16px;
